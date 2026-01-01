@@ -4,18 +4,26 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~54.0.30",
-    "expo-status-bar": "~3.0.9",
-    "react": "19.1.0",
-    "react-native": "0.81.5"
+    "@expo/ui": "0.2.0-canary-20251230-fc48ddc",
+    "color": "4.2.3",
+    "expo": "55.0.0-canary-20251230-fc48ddc",
+    "expo-glass-effect": "0.2.0-canary-20251230-fc48ddc",
+    "expo-router": "7.0.0-canary-20251230-fc48ddc",
+    "expo-status-bar": "3.0.10-canary-20251230-fc48ddc",
+    "expo-symbols": "1.1.0-canary-20251230-fc48ddc",
+    "expo-system-ui": "6.0.10-canary-20251230-fc48ddc",
+    "react": "19.2.0",
+    "react-native": "0.83.1",
+    "react-native-safe-area-context": "~5.6.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "typescript": "~5.9.2"
   },
   "private": true
