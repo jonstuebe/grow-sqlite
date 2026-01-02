@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-import { uuid } from "./uuid";
+import { uuid } from "@/db/uuid";
+import { dollarsToCents } from "@/utils/currency";
 
 /**
  * Seed the database with sample data for development
@@ -35,26 +36,27 @@ export async function runSeed(db: SQLiteDatabase): Promise<void> {
   };
 
   // Sample accounts (current_amount is derived from transactions)
+  // Note: target_amount is in cents
   const accounts = [
     {
       id: accountIds.house,
       name: "House",
-      target_amount: 50000,
+      target_amount: dollarsToCents(50000), // $50,000
     },
     {
       id: accountIds.vacation,
       name: "Vacation",
-      target_amount: 5000,
+      target_amount: dollarsToCents(5000), // $5,000
     },
     {
       id: accountIds.emergency,
       name: "Emergency Fund",
-      target_amount: 10000,
+      target_amount: dollarsToCents(10000), // $10,000
     },
     {
       id: accountIds.car,
       name: "New Car",
-      target_amount: 25000,
+      target_amount: dollarsToCents(25000), // $25,000
     },
   ];
 
@@ -68,71 +70,98 @@ export async function runSeed(db: SQLiteDatabase): Promise<void> {
   }
 
   // Sample transactions (deposits add, withdrawals subtract)
+  // Note: amount is in cents
   const transactions = [
     {
       id: uuid(),
       account_id: accountIds.house,
-      amount: 10000,
+      amount: dollarsToCents(10000), // $10,000
       type: "deposit",
       description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.house,
-      amount: 2500,
+      amount: dollarsToCents(2500), // $2,500
       type: "deposit",
       description: "Monthly savings",
     },
     {
       id: uuid(),
       account_id: accountIds.vacation,
-      amount: 2000,
+      amount: dollarsToCents(2000), // $2,000
       type: "deposit",
       description: "Tax refund",
     },
     {
       id: uuid(),
       account_id: accountIds.vacation,
-      amount: 200,
+      amount: dollarsToCents(200), // $200
       type: "deposit",
       description: "Weekly savings",
     },
     {
       id: uuid(),
       account_id: accountIds.emergency,
-      amount: 8000,
+      amount: dollarsToCents(8000), // $8,000
       type: "deposit",
       description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.emergency,
-      amount: 500,
+      amount: dollarsToCents(500), // $500
       type: "withdrawal",
       description: "Car repair",
     },
     {
       id: uuid(),
       account_id: accountIds.car,
-      amount: 5000,
+      amount: dollarsToCents(5000), // $5,000
       type: "deposit",
       description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.car,
-      amount: 3000,
+      amount: dollarsToCents(3000), // $3,000
       type: "deposit",
       description: "Bonus",
+    },
+    // Transfers
+    {
+      id: uuid(),
+      account_id: accountIds.emergency,
+      related_account_id: accountIds.vacation,
+      amount: dollarsToCents(500), // $500
+      type: "transfer",
+      description: "Vacation fund boost",
+    },
+    {
+      id: uuid(),
+      account_id: accountIds.car,
+      related_account_id: accountIds.house,
+      amount: dollarsToCents(1000), // $1,000
+      type: "transfer",
+      description: "Reallocation to house fund",
     },
   ];
 
   // Insert transactions
   for (const txn of transactions) {
     await db.runAsync(
-      `INSERT INTO transactions (id, account_id, amount, type, description, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [txn.id, txn.account_id, txn.amount, txn.type, txn.description, now, now]
+      `INSERT INTO transactions (id, account_id, amount, type, description, related_account_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        txn.id,
+        txn.account_id,
+        txn.amount,
+        txn.type,
+        txn.description,
+        "related_account_id" in txn ? txn.related_account_id ?? null : null,
+        now,
+        now,
+      ]
     );
   }
 

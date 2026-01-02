@@ -50,9 +50,7 @@ export default function RootLayout() {
               name="transfer"
               options={{
                 headerShown: false,
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.5, 1],
-                sheetGrabberVisible: true,
+                presentation: "modal",
               }}
             />
             <Stack.Screen
@@ -64,8 +62,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="deposit"
               options={{
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.5, 1],
+                presentation: "modal",
                 sheetGrabberVisible: true,
               }}
             />

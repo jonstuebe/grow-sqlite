@@ -96,6 +96,7 @@ export default function HomeScreen() {
       >
         <ScrollView
           contentContainerStyle={{
+            flex: 1,
             paddingTop: spacing.lg,
             paddingHorizontal: spacing.lg,
             gap: spacing.md,
@@ -149,10 +150,12 @@ export default function HomeScreen() {
       </View>
 
       <Toolbar>
-        <Toolbar.Button
-          icon="arrow.up.arrow.down"
-          onPress={() => router.push("/transfer")}
-        />
+        {accounts.length >= 2 ? (
+          <Toolbar.Button
+            icon="arrow.up.arrow.down"
+            onPress={() => router.push("/transfer")}
+          />
+        ) : null}
         <Toolbar.Spacer sharesBackground={false} />
         <Toolbar.Button icon="plus" onPress={() => router.push("/add")} />
       </Toolbar>

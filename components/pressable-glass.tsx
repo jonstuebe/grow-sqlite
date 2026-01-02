@@ -7,17 +7,13 @@ export interface PressableGlassProps extends PressableProps {
 
 export function PressableGlass({
   children,
-  glassProps = { isInteractive: true },
+  glassProps,
   ...props
 }: PressableGlassProps) {
-  if (glassProps && glassProps.isInteractive === undefined) {
-    glassProps.isInteractive = true;
-  }
-
   return (
     <Pressable {...props}>
       {(state) => (
-        <GlassView {...glassProps}>
+        <GlassView isInteractive {...glassProps}>
           {typeof children === "function" ? children(state) : children}
         </GlassView>
       )}

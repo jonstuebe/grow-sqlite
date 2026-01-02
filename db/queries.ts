@@ -9,6 +9,7 @@ import type {
   CreateTransactionInput,
 } from "./types";
 import { uuid } from "./uuid";
+import { centsToDollars, dollarsToCents } from "@/utils/currency";
 
 // ============================================================================
 // Account Queries
@@ -16,6 +17,7 @@ import { uuid } from "./uuid";
 
 /**
  * Get all accounts with their computed current_amount from transactions
+ * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getAccounts(db: SQLiteDatabase): Promise<Account[]> {
   const rows = await db.getAllAsync<AccountRow & { current_amount: number }>(`
@@ -38,17 +40,23 @@ export async function getAccounts(db: SQLiteDatabase): Promise<Account[]> {
     ORDER BY a.created_at DESC
   `);
 
-  return rows;
+  return rows.map((row) => ({
+    ...row,
+    target_amount: centsToDollars(row.target_amount),
+    current_amount: centsToDollars(row.current_amount),
+  }));
 }
 
 /**
  * Get a single account by ID with computed current_amount
+ * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getAccount(
   db: SQLiteDatabase,
   id: string
 ): Promise<Account | null> {
-  const row = await db.getFirstAsync<AccountRow & { current_amount: number }>(`
+  const row = await db.getFirstAsync<AccountRow & { current_amount: number }>(
+    `
     SELECT 
       a.*,
       COALESCE(
@@ -66,13 +74,22 @@ export async function getAccount(
       ) as current_amount
     FROM accounts a
     WHERE a.id = ?
-  `, [id]);
+  `,
+    [id]
+  );
 
-  return row ?? null;
+  if (!row) return null;
+
+  return {
+    ...row,
+    target_amount: centsToDollars(row.target_amount),
+    current_amount: centsToDollars(row.current_amount),
+  };
 }
 
 /**
  * Get total balance across all accounts
+ * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getTotalBalance(db: SQLiteDatabase): Promise<number> {
   const result = await db.getFirstAsync<{ total: number }>(`
@@ -86,11 +103,12 @@ export async function getTotalBalance(db: SQLiteDatabase): Promise<number> {
     FROM transactions
   `);
 
-  return result?.total ?? 0;
+  return centsToDollars(result?.total ?? 0);
 }
 
 /**
  * Create a new account
+ * Note: Converts dollars from app to cents for DB storage
  */
 export async function createAccount(
   db: SQLiteDatabase,
@@ -102,7 +120,7 @@ export async function createAccount(
   await db.runAsync(
     `INSERT INTO accounts (id, name, target_amount, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?)`,
-    [id, input.name, input.target_amount, now, now]
+    [id, input.name, dollarsToCents(input.target_amount), now, now]
   );
 
   // Return the newly created account
@@ -116,6 +134,7 @@ export async function createAccount(
 
 /**
  * Update an existing account
+ * Note: Converts dollars from app to cents for DB storage
  */
 export async function updateAccount(
   db: SQLiteDatabase,
@@ -133,7 +152,7 @@ export async function updateAccount(
 
   if (input.target_amount !== undefined) {
     updates.push("target_amount = ?");
-    values.push(input.target_amount);
+    values.push(dollarsToCents(input.target_amount));
   }
 
   values.push(id);
@@ -167,27 +186,36 @@ export async function deleteAccount(
 
 /**
  * Get all transactions, optionally filtered by account
+ * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getTransactions(
   db: SQLiteDatabase,
   accountId?: string
 ): Promise<Transaction[]> {
+  let rows: Transaction[];
+
   if (accountId) {
-    return db.getAllAsync<Transaction>(
+    rows = await db.getAllAsync<Transaction>(
       `SELECT * FROM transactions 
        WHERE account_id = ? OR related_account_id = ?
        ORDER BY created_at DESC`,
       [accountId, accountId]
     );
+  } else {
+    rows = await db.getAllAsync<Transaction>(
+      "SELECT * FROM transactions ORDER BY created_at DESC"
+    );
   }
 
-  return db.getAllAsync<Transaction>(
-    "SELECT * FROM transactions ORDER BY created_at DESC"
-  );
+  return rows.map((row) => ({
+    ...row,
+    amount: centsToDollars(row.amount),
+  }));
 }
 
 /**
  * Get a single transaction by ID
+ * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getTransaction(
   db: SQLiteDatabase,
@@ -198,11 +226,17 @@ export async function getTransaction(
     [id]
   );
 
-  return row ?? null;
+  if (!row) return null;
+
+  return {
+    ...row,
+    amount: centsToDollars(row.amount),
+  };
 }
 
 /**
  * Create a new transaction
+ * Note: Converts dollars from app to cents for DB storage
  */
 export async function createTransaction(
   db: SQLiteDatabase,
@@ -222,7 +256,7 @@ export async function createTransaction(
     [
       id,
       input.account_id,
-      input.amount,
+      dollarsToCents(input.amount),
       input.type,
       input.description ?? null,
       input.related_account_id ?? null,
@@ -248,4 +282,3 @@ export async function deleteTransaction(
 ): Promise<void> {
   await db.runAsync("DELETE FROM transactions WHERE id = ?", [id]);
 }
-

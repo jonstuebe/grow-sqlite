@@ -2,11 +2,12 @@
 -- Creates accounts table to track savings goals
 -- Note: All IDs are UUIDs generated client-side (React Native), not by the database
 -- Note: current_amount is derived from SUM of transactions, not stored
+-- Note: All monetary amounts (target_amount, amount) are stored in cents (integer)
 
 CREATE TABLE IF NOT EXISTS accounts (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
-  target_amount REAL NOT NULL,
+  target_amount INTEGER NOT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -14,10 +15,11 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE INDEX IF NOT EXISTS idx_accounts_created ON accounts(created_at);
 
 -- Transactions table to track deposits, withdrawals, and transfers
+-- Note: amount is stored in cents (integer)
 CREATE TABLE IF NOT EXISTS transactions (
   id TEXT PRIMARY KEY NOT NULL,
   account_id TEXT NOT NULL,
-  amount REAL NOT NULL,
+  amount INTEGER NOT NULL,
   type TEXT NOT NULL CHECK(type IN ('deposit', 'withdrawal', 'transfer')),
   description TEXT,
   related_account_id TEXT,
