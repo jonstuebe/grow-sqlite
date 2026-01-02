@@ -69,9 +69,8 @@ export default function RootLayout() {
             <Stack.Screen
               name="withdrawal"
               options={{
-                presentation: "formSheet",
-                sheetAllowedDetents: [0.5, 1],
-                sheetGrabberVisible: true,
+                headerShown: false,
+                presentation: "modal",
               }}
             />
           </Stack>

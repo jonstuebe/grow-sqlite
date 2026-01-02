@@ -112,7 +112,7 @@ export default function HomeScreen() {
               }}
             >
               <AccountRow account={account} />
-              <Link href="/withdrawal" asChild>
+              <Link href={`/withdrawal?accountId=${account.id}`} asChild>
                 <PressableGlass
                   glassProps={{
                     style: {
