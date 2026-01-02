@@ -1,94 +1,19 @@
-import {
-  Button,
-  ContextMenu,
-  Host,
-  Text as SwiftUIText,
-} from "@expo/ui/swift-ui";
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { IconButton } from "@/components/icon-button";
+import { NumericKeypad } from "@/components/numeric-keypad";
+import { AccountPicker } from "@/components/account-picker";
 import { PressableGlass } from "@/components/pressable-glass";
 import { Text } from "@/components/text";
 import { useAccounts, useCreateTransaction } from "@/db/hooks";
 import { useTheme } from "@/hooks/useTheme";
+import { useTransferReducer } from "@/hooks/useTransferReducer";
+import { useTransferValidation } from "@/hooks/useTransferValidation";
 import { formatCurrency } from "@/utils/format";
-
-type KeypadKey =
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "."
-  | "0"
-  | "backspace";
-
-function NumericKeypad({
-  onKeyPress,
-}: {
-  onKeyPress: (key: KeypadKey) => void;
-}) {
-  const { colors, spacing, radius } = useTheme();
-
-  const keys: KeypadKey[][] = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"],
-    [".", "0", "backspace"],
-  ];
-
-  return (
-    <View style={{ gap: spacing.md }}>
-      {keys.map((row, rowIndex) => (
-        <View
-          key={rowIndex}
-          style={{
-            flexDirection: "row",
-            gap: spacing.md,
-          }}
-        >
-          {row.map((key) => (
-            <PressableGlass
-              key={key}
-              onPress={() => onKeyPress(key)}
-              style={{
-                flex: 1,
-                aspectRatio: 1.8,
-              }}
-              glassProps={{
-                style: {
-                  flex: 1,
-                  borderRadius: radius.xxl,
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              }}
-            >
-              {key === "backspace" ? (
-                <SymbolView
-                  name="delete.left"
-                  tintColor={colors.labelPrimary}
-                  size={24}
-                />
-              ) : (
-                <Text size="title1Emphasized" style={{ fontSize: 28 }}>
-                  {key}
-                </Text>
-              )}
-            </PressableGlass>
-          ))}
-        </View>
-      ))}
-    </View>
-  );
-}
 
 export default function TransferScreen() {
   const insets = useSafeAreaInsets();
@@ -98,51 +23,27 @@ export default function TransferScreen() {
   const { data: accounts = [] } = useAccounts();
   const createTransaction = useCreateTransaction();
 
-  const [fromIndex, setFromIndex] = useState<number>(0);
-  const [toIndex, setToIndex] = useState<number>(1);
-  const [amount, setAmount] = useState("");
+  const { state, setFromIndex, setToIndex, swapAccounts, handleKeyPress } =
+    useTransferReducer();
 
-  const handleKeyPress = useCallback((key: KeypadKey) => {
-    setAmount((prev) => {
-      if (key === "backspace") {
-        return prev.slice(0, -1);
-      }
-      if (key === ".") {
-        // Only allow one decimal point
-        if (prev.includes(".")) return prev;
-        // Add leading zero if starting with decimal
-        if (prev === "") return "0.";
-        return prev + ".";
-      }
-      // Limit decimal places to 2
-      const decimalIndex = prev.indexOf(".");
-      if (decimalIndex !== -1 && prev.length - decimalIndex > 2) {
-        return prev;
-      }
-      // Prevent leading zeros
-      if (prev === "0") {
-        return key;
-      }
-      return prev + key;
-    });
-  }, []);
+  const { fromIndex, toIndex, amount } = state;
 
-  const fromAccount = accounts[fromIndex] ?? null;
-  const toAccount = accounts[toIndex] ?? null;
+  const fromAccount = fromIndex !== null ? accounts[fromIndex] ?? null : null;
+  const toAccount = toIndex !== null ? accounts[toIndex] ?? null : null;
 
-  const handleSwap = () => {
-    const tempFrom = fromIndex;
-    setFromIndex(toIndex);
-    setToIndex(tempFrom);
-  };
+  const validationContext = useMemo(
+    () => ({
+      fromAccountBalance: fromAccount?.current_amount ?? null,
+    }),
+    [fromAccount?.current_amount]
+  );
+
+  const { errors, isValid } = useTransferValidation(state, validationContext);
 
   const handleTransfer = async () => {
-    if (!fromAccount || !toAccount || !amount) return;
-    if (fromAccount.id === toAccount.id) return;
+    if (!isValid || !fromAccount || !toAccount) return;
 
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) return;
-    if (numAmount > fromAccount.current_amount) return;
 
     try {
       await createTransaction.mutateAsync({
@@ -159,7 +60,6 @@ export default function TransferScreen() {
   };
 
   const numAmount = parseFloat(amount) || 0;
-  const isSameAccount = fromAccount?.id === toAccount?.id;
 
   return (
     <View
@@ -173,46 +73,25 @@ export default function TransferScreen() {
         position: "relative",
       }}
     >
-      <PressableGlass
+      <IconButton
+        icon="xmark"
         onPress={() => router.back()}
         style={{
           position: "absolute",
           top: spacing.xl,
           left: spacing.lg,
         }}
-        glassProps={{
-          style: {
-            width: 44,
-            height: 44,
-            borderRadius: radius.circle,
-            alignItems: "center",
-            justifyContent: "center",
-          },
-        }}
-      >
-        <SymbolView name="xmark" tintColor={colors.white} size={24} />
-      </PressableGlass>
-      <PressableGlass
+      />
+      <IconButton
+        icon="checkmark"
+        variant="primary"
         onPress={handleTransfer}
         style={{
           position: "absolute",
           top: spacing.xl,
           right: spacing.lg,
         }}
-        glassProps={{
-          style: {
-            width: 44,
-            height: 44,
-            borderRadius: radius.circle,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.blue,
-          },
-          glassEffectStyle: "clear",
-        }}
-      >
-        <SymbolView name="checkmark" tintColor={colors.white} size={24} />
-      </PressableGlass>
+      />
 
       <View style={{ gap: spacing.sm }}>
         <View
@@ -239,7 +118,7 @@ export default function TransferScreen() {
               {formatCurrency(numAmount)}
             </Text>
           </View>
-          {fromAccount && numAmount > fromAccount.current_amount && (
+          {errors.amount && amount !== "" && (
             <View
               style={{
                 position: "absolute",
@@ -253,7 +132,7 @@ export default function TransferScreen() {
                 color="red"
                 style={{ textAlign: "center" }}
               >
-                Insufficient funds
+                {errors.amount}
               </Text>
             </View>
           )}
@@ -274,53 +153,16 @@ export default function TransferScreen() {
             >
               FROM
             </Text>
-            <Host>
-              <ContextMenu>
-                <ContextMenu.Items>
-                  {accounts.map((account, idx) => (
-                    <Button key={idx} onPress={() => setFromIndex(idx)}>
-                      <SwiftUIText>{account.name}</SwiftUIText>
-                    </Button>
-                  ))}
-                </ContextMenu.Items>
-                <ContextMenu.Trigger>
-                  <PressableGlass
-                    glassProps={{
-                      style: {
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: spacing.lg,
-                        backgroundColor: colors.fillQuaternary,
-                        borderRadius: radius.xl,
-                      },
-                    }}
-                  >
-                    <View>
-                      <Text size="bodyRegular" color="labelVibrantPrimary">
-                        {fromAccount?.name}
-                      </Text>
-                      <Text
-                        size="rowLabelSubtitle"
-                        color="labelVibrantSecondary"
-                      >
-                        {formatCurrency(fromAccount.current_amount)}
-                      </Text>
-                    </View>
-                    <SymbolView
-                      name="chevron.up.chevron.down"
-                      tintColor={colors.blue}
-                      size={20}
-                    />
-                  </PressableGlass>
-                </ContextMenu.Trigger>
-              </ContextMenu>
-            </Host>
+            <AccountPicker
+              accounts={accounts}
+              selectedAccount={fromAccount}
+              onSelect={setFromIndex}
+            />
           </View>
 
           <View style={{ alignItems: "center" }}>
             <PressableGlass
-              onPress={handleSwap}
+              onPress={swapAccounts}
               glassProps={{
                 style: {
                   backgroundColor: colors.backgroundTertiary,
@@ -349,48 +191,20 @@ export default function TransferScreen() {
             >
               TO
             </Text>
-            <Host>
-              <ContextMenu>
-                <ContextMenu.Items>
-                  {accounts.map((account, idx) => (
-                    <Button key={idx} onPress={() => setToIndex(idx)}>
-                      <SwiftUIText>{account.name}</SwiftUIText>
-                    </Button>
-                  ))}
-                </ContextMenu.Items>
-                <ContextMenu.Trigger>
-                  <PressableGlass
-                    glassProps={{
-                      style: {
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: spacing.lg,
-                        backgroundColor: colors.fillQuaternary,
-                        borderRadius: radius.xl,
-                      },
-                    }}
-                  >
-                    <View>
-                      <Text size="bodyRegular" color="labelVibrantPrimary">
-                        {toAccount?.name}
-                      </Text>
-                      <Text
-                        size="rowLabelSubtitle"
-                        color="labelVibrantSecondary"
-                      >
-                        {formatCurrency(toAccount.current_amount)}
-                      </Text>
-                    </View>
-                    <SymbolView
-                      name="chevron.up.chevron.down"
-                      tintColor={colors.blue}
-                      size={20}
-                    />
-                  </PressableGlass>
-                </ContextMenu.Trigger>
-              </ContextMenu>
-            </Host>
+            <AccountPicker
+              accounts={accounts}
+              selectedAccount={toAccount}
+              onSelect={setToIndex}
+            />
+            {errors.toIndex && toIndex !== null && (
+              <Text
+                size="caption1Regular"
+                color="red"
+                style={{ marginTop: spacing.xs }}
+              >
+                {errors.toIndex}
+              </Text>
+            )}
           </View>
         </View>
       </View>
