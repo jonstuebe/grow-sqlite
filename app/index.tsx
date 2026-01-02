@@ -128,7 +128,7 @@ export default function HomeScreen() {
                   <SymbolView name="minus" tintColor={colors.red} size={24} />
                 </PressableGlass>
               </Link>
-              <Link href="/deposit" asChild>
+              <Link href={`/deposit?accountId=${account.id}`} asChild>
                 <PressableGlass
                   glassProps={{
                     style: {
@@ -157,7 +157,7 @@ export default function HomeScreen() {
           />
         ) : null}
         <Toolbar.Spacer sharesBackground={false} />
-        <Toolbar.Button icon="plus" onPress={() => router.push("/add")} />
+        <Toolbar.Button icon="plus" onPress={() => router.push("/new")} />
       </Toolbar>
     </>
   );

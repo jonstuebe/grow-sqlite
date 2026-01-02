@@ -39,7 +39,7 @@ export default function RootLayout() {
             />
             <Stack.Screen name="index" />
             <Stack.Screen
-              name="add"
+              name="new"
               options={{
                 presentation: "formSheet",
                 sheetAllowedDetents: [0.5, 1],
@@ -62,8 +62,8 @@ export default function RootLayout() {
             <Stack.Screen
               name="deposit"
               options={{
+                headerShown: false,
                 presentation: "modal",
-                sheetGrabberVisible: true,
               }}
             />
             <Stack.Screen
