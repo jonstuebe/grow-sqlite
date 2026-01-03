@@ -99,7 +99,7 @@ describe("syncMachine", () => {
       actor.stop();
     });
 
-    it("should timeout after 30 seconds if connection is not established", () => {
+    it("should timeout after 15 seconds if connection is not established", () => {
       vi.useFakeTimers();
 
       const actor = createTestActor();
@@ -108,8 +108,8 @@ describe("syncMachine", () => {
       actor.send({ type: "START_SYNC", peerId: "peer-123" });
       expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
 
-      // Advance time by 30 seconds
-      vi.advanceTimersByTime(30000);
+      // Advance time by 15 seconds
+      vi.advanceTimersByTime(15000);
 
       expect(actor.getSnapshot().value).toBe("error");
       expect(actor.getSnapshot().context.lastError).toBe(
@@ -121,7 +121,7 @@ describe("syncMachine", () => {
       vi.useRealTimers();
     });
 
-    it("should NOT timeout if connection is established before 30 seconds", () => {
+    it("should NOT timeout if connection is established before 15 seconds", () => {
       vi.useFakeTimers();
 
       const actor = createTestActor();
@@ -130,15 +130,15 @@ describe("syncMachine", () => {
       actor.send({ type: "START_SYNC", peerId: "peer-123" });
       expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
 
-      // Advance time by 15 seconds (before timeout)
-      vi.advanceTimersByTime(15000);
+      // Advance time by 10 seconds (before timeout)
+      vi.advanceTimersByTime(10000);
 
       // Connection established
       actor.send({ type: "PEER_CONNECTED", peerId: "peer-123" });
       expect(actor.getSnapshot().value).toEqual({ syncing: "requesting" });
 
       // Advance past the original timeout point
-      vi.advanceTimersByTime(20000);
+      vi.advanceTimersByTime(10000);
 
       // Should still be in requesting, not error
       expect(actor.getSnapshot().value).toEqual({ syncing: "requesting" });

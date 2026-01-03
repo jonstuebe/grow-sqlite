@@ -32,9 +32,11 @@
     "expo-system-ui": "6.0.10-canary-20251230-fc48ddc",
     "react": "19.2.0",
     "react-native": "0.83.1",
+    "react-native-gesture-handler": "~2.28.0",
     "react-native-keyboard-controller": "1.18.5",
     "react-native-reanimated": "~4.2.0",
     "react-native-safe-area-context": "~5.6.0",
+    "sonner-native": "^0.22.2",
     "xstate": "^5.25.0",
     "zod": "^4.3.4"
   },

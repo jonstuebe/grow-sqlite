@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { toast } from "sonner-native";
 
 import { Text } from "@/components/text";
 import { useNearbyConnections, type Peer } from "@/context/nearby-connections";
@@ -33,23 +34,15 @@ export default function SyncScreen() {
     useBackgroundAdvertising();
 
   // Use the sync state machine (handles pause/resume advertising internally)
-  const {
-    isDiscovering,
-    isSuccess,
-    isError,
-    syncStatus,
-    syncingPeerId,
-    mergeResult,
-    lastError,
-    startSync,
-  } = useSyncMachine({
-    deviceName,
-    db,
-    queryClient,
-    nearbyConnections,
-    pauseAdvertising,
-    resumeAdvertising,
-  });
+  const { syncStatus, syncingPeerId, mergeResult, lastError, startSync } =
+    useSyncMachine({
+      deviceName,
+      db,
+      queryClient,
+      nearbyConnections,
+      pauseAdvertising,
+      resumeAdvertising,
+    });
 
   const {
     discoveredPeers,
@@ -102,24 +95,37 @@ export default function SyncScreen() {
     }
   }, [pendingInvitation, acceptInvitation]);
 
-  // Show alert on sync success/error
+  // Track the previous sync status to detect transitions
+  const prevSyncStatusRef = useRef(syncStatus);
+
+  // Show toast notifications for sync status changes
   useEffect(() => {
-    if (isSuccess && mergeResult) {
-      Alert.alert(
-        "Sync Complete",
-        formatSyncResult(
+    const prevStatus = prevSyncStatusRef.current;
+    prevSyncStatusRef.current = syncStatus;
+
+    // Only show toast on status transitions, not on initial render
+    if (prevStatus === syncStatus) return;
+
+    if (syncStatus === "syncing") {
+      toast.loading("Syncing...", { id: "sync-toast" });
+    } else if (syncStatus === "success" && mergeResult) {
+      toast.success("Sync complete!", {
+        id: "sync-toast",
+        description: formatSyncResult(
           mergeResult.accountsMerged,
           mergeResult.transactionsMerged
-        )
-      );
+        ),
+      });
+    } else if (syncStatus === "error" && lastError) {
+      toast.error("Sync failed", {
+        id: "sync-toast",
+        description: lastError,
+      });
+    } else if (syncStatus === "idle" && prevStatus !== "idle") {
+      // Dismiss the toast when returning to idle (after success/error auto-reset)
+      toast.dismiss("sync-toast");
     }
-  }, [isSuccess, mergeResult]);
-
-  useEffect(() => {
-    if (isError && lastError) {
-      Alert.alert("Sync Failed", lastError);
-    }
-  }, [isError, lastError]);
+  }, [syncStatus, mergeResult, lastError]);
 
   const handleSync = useCallback(
     async (peer: Peer, isConnected: boolean) => {
@@ -135,7 +141,9 @@ export default function SyncScreen() {
         await startSync(peer, isConnected);
       } catch (error) {
         console.error("Failed to sync:", error);
-        Alert.alert("Error", `Failed to sync with ${peer.name}`);
+        toast.error("Error", {
+          description: `Failed to sync with ${peer.name}`,
+        });
       }
     },
     [startSync]
@@ -298,29 +306,6 @@ export default function SyncScreen() {
             />
           )}
         </View>
-
-        {/* Sync Status */}
-        {syncStatus !== "idle" && (
-          <View
-            style={{
-              padding: spacing.lg,
-              alignItems: "center",
-              backgroundColor:
-                syncStatus === "success"
-                  ? colors.green
-                  : syncStatus === "error"
-                  ? colors.red
-                  : colors.blue,
-              borderRadius: radius.md,
-            }}
-          >
-            <Text style={{ ...typography.bodyEmphasized, color: colors.white }}>
-              {syncStatus === "syncing" && "Syncing..."}
-              {syncStatus === "success" && "Sync complete!"}
-              {syncStatus === "error" && "Sync failed"}
-            </Text>
-          </View>
-        )}
       </View>
     </>
   );

@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { Toaster } from "sonner-native";
 
 import { GlobalInvitationHandler } from "@/components/global-invitation-handler";
 import { NearbyConnectionsProvider } from "@/context/nearby-connections";
@@ -24,88 +26,106 @@ export default function RootLayout() {
   return (
     <DatabaseProvider>
       <QueryClientProvider client={queryClient}>
-        <KeyboardProvider>
-          <NearbyConnectionsProvider>
-            <BackgroundAdvertisingProvider>
-              <GlobalInvitationHandler />
-              <Stack
-                screenOptions={{
-                  contentStyle: {
-                    flex: 1,
-                    backgroundColor: colors.backgroundSecondary,
-                    borderTopLeftRadius: radius.xxl,
-                    borderTopRightRadius: radius.xxl,
-                  },
-                }}
-              >
-                <Stack.Header
-                  style={{
-                    backgroundColor: colors.backgroundSecondary,
+        <GestureHandlerRootView>
+          <KeyboardProvider>
+            <NearbyConnectionsProvider>
+              <BackgroundAdvertisingProvider>
+                <GlobalInvitationHandler />
+                <Stack
+                  screenOptions={{
+                    contentStyle: {
+                      flex: 1,
+                      backgroundColor: colors.backgroundSecondary,
+                      borderTopLeftRadius: radius.xxl,
+                      borderTopRightRadius: radius.xxl,
+                    },
+                  }}
+                >
+                  <Stack.Header
+                    style={{
+                      backgroundColor: colors.backgroundSecondary,
+                    }}
+                  />
+                  <Stack.Screen name="index" />
+                  <Stack.Screen
+                    name="new"
+                    options={{
+                      presentation: "formSheet",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="transfer"
+                    options={{
+                      headerShown: false,
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="[id]"
+                    options={{
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="deposit"
+                    options={{
+                      headerShown: false,
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="withdrawal"
+                    options={{
+                      headerShown: false,
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="transactions"
+                    options={{
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="archived"
+                    options={{
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="import"
+                    options={{
+                      presentation: "modal",
+                    }}
+                  />
+                  <Stack.Screen
+                    name="sync"
+                    options={{
+                      presentation: "modal",
+                    }}
+                  />
+                </Stack>
+                <StatusBar style="auto" />
+                <Toaster
+                  position="bottom-center"
+                  toastOptions={{
+                    style: {
+                      backgroundColor: colors.backgroundTertiary,
+                      borderColor: colors.separatorOpaque,
+                      borderWidth: 1,
+                    },
+                    titleStyle: {
+                      color: colors.labelPrimary,
+                    },
+                    descriptionStyle: {
+                      color: colors.labelSecondary,
+                    },
                   }}
                 />
-                <Stack.Screen name="index" />
-                <Stack.Screen
-                  name="new"
-                  options={{
-                    presentation: "formSheet",
-                  }}
-                />
-                <Stack.Screen
-                  name="transfer"
-                  options={{
-                    headerShown: false,
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="[id]"
-                  options={{
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="deposit"
-                  options={{
-                    headerShown: false,
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="withdrawal"
-                  options={{
-                    headerShown: false,
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="transactions"
-                  options={{
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="archived"
-                  options={{
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="import"
-                  options={{
-                    presentation: "modal",
-                  }}
-                />
-                <Stack.Screen
-                  name="sync"
-                  options={{
-                    presentation: "modal",
-                  }}
-                />
-              </Stack>
-              <StatusBar style="auto" />
-            </BackgroundAdvertisingProvider>
-          </NearbyConnectionsProvider>
-        </KeyboardProvider>
+              </BackgroundAdvertisingProvider>
+            </NearbyConnectionsProvider>
+          </KeyboardProvider>
+        </GestureHandlerRootView>
       </QueryClientProvider>
     </DatabaseProvider>
   );
