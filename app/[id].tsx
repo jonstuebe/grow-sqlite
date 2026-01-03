@@ -12,6 +12,7 @@ import { useAccountDetailReducer } from "@/hooks/useAccountDetailReducer";
 import { useTheme } from "@/hooks/useTheme";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { formatCurrency, getProgress } from "@/utils/format";
+import { Toolbar } from "expo-router/unstable-toolbar";
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -140,7 +141,7 @@ export default function AccountDetailScreen() {
               CURRENT BALANCE
             </Text>
             <Text
-              size="largeTitleEmphasized"
+              variant="largeTitleEmphasized"
               style={{ fontSize: 48, lineHeight: 56 }}
             >
               {formatCurrency(account.current_amount)}
@@ -188,58 +189,20 @@ export default function AccountDetailScreen() {
           </View>
         </View>
 
-        <View style={{ gap: spacing.md }}>
-          <Link href={`/transactions?accountId=${account.id}`} asChild>
-            <PressableGlass
-              glassProps={{
-                style: {
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  paddingHorizontal: spacing.lg,
-                  paddingVertical: spacing.lg,
-                  borderRadius: radius.xl,
-                },
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacing.md,
-                }}
-              >
-                <Text variant="rowLabelTitle">View Transactions</Text>
-              </View>
-              <SymbolView
-                name="chevron.right"
-                tintColor={colors.labelTertiary}
-                size={14}
-              />
-            </PressableGlass>
-          </Link>
-
-          {/* Archive Button */}
-          <PressableGlass
-            onPress={handleArchive}
-            glassProps={{
-              style: {
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                paddingHorizontal: spacing.lg,
-                paddingVertical: spacing.lg,
-                borderRadius: radius.xl,
-                gap: spacing.sm,
-              },
-            }}
+        <Toolbar>
+          <Toolbar.Button
+            icon="list.bullet"
+            onPress={() => router.push(`/transactions?accountId=${account.id}`)}
           >
-            <SymbolView name="archivebox" tintColor={colors.red} size={20} />
-            <Text variant="bodyRegular" color="red">
-              Archive Account
-            </Text>
-          </PressableGlass>
-        </View>
+            Transactions
+          </Toolbar.Button>
+          <Toolbar.Spacer sharesBackground={false} />
+          <Toolbar.Button
+            icon="archivebox"
+            tintColor={colors.red}
+            onPress={handleArchive}
+          />
+        </Toolbar>
       </View>
     </>
   );

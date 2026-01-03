@@ -154,13 +154,13 @@ export default function ImportScreen() {
               size={64}
             />
             <Text
-              size="title2Emphasized"
+              variant="title2Emphasized"
               style={{ textAlign: "center", marginTop: spacing.md }}
             >
               Import from Grow
             </Text>
             <Text
-              size="bodyRegular"
+              variant="bodyRegular"
               color="labelVibrantSecondary"
               style={{ textAlign: "center", paddingHorizontal: spacing.xl }}
             >
@@ -239,7 +239,9 @@ export default function ImportScreen() {
                 <Text variant="bodyRegular" color="labelVibrantSecondary">
                   Accounts
                 </Text>
-                <Text variant="bodyEmphasized">{state.preview.accountCount}</Text>
+                <Text variant="bodyEmphasized">
+                  {state.preview.accountCount}
+                </Text>
               </View>
               <View
                 style={{
@@ -258,7 +260,7 @@ export default function ImportScreen() {
 
             <View style={{ gap: spacing.md }}>
               <Text
-                size="caption1Emphasized"
+                variant="caption1Emphasized"
                 color="labelVibrantSecondary"
                 style={{ paddingLeft: spacing.md }}
               >
@@ -280,7 +282,7 @@ export default function ImportScreen() {
                     <Text variant="bodyEmphasized">{account.name}</Text>
                     {account.hasGoal && account.goalAmount && (
                       <Text
-                        size="caption1Regular"
+                        variant="caption1Regular"
                         color="labelVibrantSecondary"
                       >
                         Goal: {formatCurrency(account.goalAmount)}
@@ -363,7 +365,7 @@ export default function ImportScreen() {
               Import Complete!
             </Text>
             <Text
-              size="bodyRegular"
+              variant="bodyRegular"
               color="labelVibrantSecondary"
               style={{ textAlign: "center" }}
             >
@@ -409,7 +411,7 @@ export default function ImportScreen() {
               Import Failed
             </Text>
             <Text
-              size="bodyRegular"
+              variant="bodyRegular"
               color="labelVibrantSecondary"
               style={{ textAlign: "center", paddingHorizontal: spacing.xl }}
             >

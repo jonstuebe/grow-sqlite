@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView, type SymbolViewProps } from "expo-symbols";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components/text";
@@ -147,7 +147,7 @@ export default function TransactionsScreen() {
           <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
         </Stack.Header.Left>
         <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          {account?.name ?? "Transactions"}
+          Transactions
         </Stack.Header.Title>
         <Stack.Header.Right>
           {transactions.length > 0 && (
@@ -159,52 +159,54 @@ export default function TransactionsScreen() {
         </Stack.Header.Right>
       </Stack.Header>
 
-      <ScrollView
-        style={{ flex: 1 }}
+      <FlatList
+        data={isLoading ? [] : transactions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TransactionRow transaction={item} accountId={accountId ?? ""} />
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
+        ListEmptyComponent={
+          isLoading ? (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text>Loading...</Text>
+            </View>
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: spacing.xxxl,
+              }}
+            >
+              <SymbolView
+                name="tray"
+                tintColor={colors.labelTertiary}
+                size={48}
+              />
+              <Text
+                variant="bodyRegular"
+                color="labelVibrantSecondary"
+                style={{ marginTop: spacing.lg }}
+              >
+                No transactions yet
+              </Text>
+            </View>
+          )
+        }
         contentContainerStyle={{
+          flexGrow: 1,
           padding: spacing.lg,
           paddingBottom: insets.bottom + spacing.lg,
-          gap: spacing.md,
         }}
-      >
-        {isLoading ? (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Text>Loading...</Text>
-          </View>
-        ) : transactions.length === 0 ? (
-          <View
-            style={{
-              flex: 1,
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: spacing.xxxl,
-            }}
-          >
-            <SymbolView
-              name="tray"
-              tintColor={colors.labelTertiary}
-              size={48}
-            />
-            <Text
-              size="bodyRegular"
-              color="labelVibrantSecondary"
-              style={{ marginTop: spacing.lg }}
-            >
-              No transactions yet
-            </Text>
-          </View>
-        ) : (
-          transactions.map((transaction) => (
-            <TransactionRow
-              key={transaction.id}
-              transaction={transaction}
-              accountId={accountId ?? ""}
-            />
-          ))
-        )}
-      </ScrollView>
+      />
     </>
   );
 }

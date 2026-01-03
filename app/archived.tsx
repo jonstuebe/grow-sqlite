@@ -153,7 +153,7 @@ export default function ArchivedScreen() {
               size={48}
             />
             <Text
-              size="bodyRegular"
+              variant="bodyRegular"
               color="labelVibrantSecondary"
               style={{ marginTop: spacing.lg }}
             >

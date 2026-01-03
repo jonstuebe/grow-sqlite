@@ -365,6 +365,7 @@ export const radius = {
   lg: 8,
   xl: 12,
   xxl: 16,
+  xxxl: 24,
   circle: 9999,
 
   rowContainer: 10,

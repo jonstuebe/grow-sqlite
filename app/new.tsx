@@ -85,18 +85,6 @@ export default function NewAccountScreen() {
           gap: spacing.xl,
         }}
       >
-        <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-          <Text variant="caption1Emphasized" color="labelVibrantSecondary">
-            INITIAL BALANCE
-          </Text>
-          <Text
-            size="largeTitleEmphasized"
-            style={{ fontSize: 48, lineHeight: 56 }}
-          >
-            ${initialBalance || "0"}
-          </Text>
-        </View>
-
         <View style={{ gap: spacing.md }}>
           <FormField.Root>
             <FormField.Label>Name</FormField.Label>
@@ -113,10 +101,11 @@ export default function NewAccountScreen() {
           <FormField.Root>
             <FormField.Label>Initial Balance</FormField.Label>
             <FormField.InputGroup>
+              <FormField.InputAddon>$</FormField.InputAddon>
               <FormField.TextInput
                 value={initialBalance}
                 onChangeText={setInitialBalance}
-                placeholder="$0"
+                placeholder="0"
                 keyboardType="decimal-pad"
               />
             </FormField.InputGroup>
@@ -136,10 +125,11 @@ export default function NewAccountScreen() {
             <FormField.Root>
               <FormField.Label>Target Amount</FormField.Label>
               <FormField.InputGroup>
+                <FormField.InputAddon>$</FormField.InputAddon>
                 <FormField.TextInput
                   value={targetAmount}
                   onChangeText={setTargetAmount}
-                  placeholder="$0"
+                  placeholder="0"
                   keyboardType="decimal-pad"
                 />
               </FormField.InputGroup>

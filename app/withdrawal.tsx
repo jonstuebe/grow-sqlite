@@ -97,7 +97,7 @@ export default function WithdrawalScreen() {
             }}
           >
             <Text
-              size="largeTitleEmphasized"
+              variant="largeTitleEmphasized"
               style={{ fontSize: 48, lineHeight: 56 }}
             >
               {formatCurrency(numAmount)}
@@ -113,7 +113,7 @@ export default function WithdrawalScreen() {
               }}
             >
               <Text
-                size="caption1Regular"
+                variant="caption1Regular"
                 color="red"
                 style={{ textAlign: "center" }}
               >
@@ -125,7 +125,7 @@ export default function WithdrawalScreen() {
 
         <View>
           <Text
-            size="caption1Emphasized"
+            variant="caption1Emphasized"
             color="labelVibrantSecondary"
             style={{
               marginBottom: spacing.sm,
@@ -156,11 +156,14 @@ export default function WithdrawalScreen() {
             </View>
             {numAmount > 0 && account && (
               <View style={{ alignItems: "flex-end" }}>
-                <Text variant="caption1Emphasized" color="labelVibrantSecondary">
+                <Text
+                  variant="caption1Emphasized"
+                  color="labelVibrantSecondary"
+                >
                   NEW BALANCE
                 </Text>
                 <Text
-                  size="bodyEmphasized"
+                  variant="bodyEmphasized"
                   color={hasInsufficientFunds ? "red" : "blue"}
                 >
                   {formatCurrency(newBalance)}

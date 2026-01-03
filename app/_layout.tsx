@@ -50,7 +50,15 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="new"
                     options={{
+                      // headerShown: false,
                       presentation: "formSheet",
+                      sheetAllowedDetents: [0.6, 1],
+                      sheetInitialDetentIndex: 0,
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        height: "100%",
+                        backgroundColor: colors.backgroundSecondary,
+                      },
                     }}
                   />
                   <Stack.Screen
@@ -83,7 +91,15 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="transactions"
                     options={{
-                      presentation: "modal",
+                      headerShown: true,
+                      presentation: "formSheet",
+                      sheetAllowedDetents: [0.3, 1],
+                      sheetInitialDetentIndex: 0,
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        height: "100%",
+                        backgroundColor: colors.backgroundSecondary,
+                      },
                     }}
                   />
                   <Stack.Screen
@@ -101,7 +117,15 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="sync"
                     options={{
-                      presentation: "modal",
+                      headerShown: false,
+                      presentation: "formSheet",
+                      sheetAllowedDetents: [0.4, 0.6],
+                      sheetInitialDetentIndex: 0,
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        height: "100%",
+                        backgroundColor: colors.backgroundSecondary,
+                      },
                     }}
                   />
                 </Stack>

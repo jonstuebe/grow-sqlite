@@ -117,7 +117,7 @@ export default function TransferScreen() {
             }}
           >
             <Text
-              size="largeTitleEmphasized"
+              variant="largeTitleEmphasized"
               style={{ fontSize: 48, lineHeight: 56 }}
             >
               {formatCurrency(numAmount)}
@@ -133,7 +133,7 @@ export default function TransferScreen() {
               }}
             >
               <Text
-                size="caption1Regular"
+                variant="caption1Regular"
                 color="red"
                 style={{ textAlign: "center" }}
               >
@@ -150,7 +150,7 @@ export default function TransferScreen() {
         >
           <View>
             <Text
-              size="caption1Emphasized"
+              variant="caption1Emphasized"
               color="labelVibrantSecondary"
               style={{
                 marginBottom: spacing.sm,
@@ -188,7 +188,7 @@ export default function TransferScreen() {
 
           <View style={{ marginTop: -spacing.xl }}>
             <Text
-              size="caption1Emphasized"
+              variant="caption1Emphasized"
               color="labelVibrantSecondary"
               style={{
                 marginBottom: spacing.sm,
@@ -203,7 +203,7 @@ export default function TransferScreen() {
             />
             {errors.toIndex && toIndex !== null && (
               <Text
-                size="caption1Regular"
+                variant="caption1Regular"
                 color="red"
                 style={{ marginTop: spacing.xs }}
               >

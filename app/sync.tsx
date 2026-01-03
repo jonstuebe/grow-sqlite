@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Stack } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
@@ -203,11 +202,6 @@ export default function SyncScreen() {
 
   return (
     <>
-      <Stack.Header style={{ backgroundColor: colors.backgroundTertiary }}>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Sync
-        </Stack.Header.Title>
-      </Stack.Header>
       <View
         style={{
           flex: 1,
@@ -219,10 +213,10 @@ export default function SyncScreen() {
         {/* Device Info */}
         <View
           style={{
-            padding: spacing.xl,
-            gap: spacing.xs,
+            padding: spacing.lg,
+            gap: spacing.xxs,
             backgroundColor: colors.backgroundTertiary,
-            borderRadius: radius.lg,
+            borderRadius: radius.xxxl,
           }}
         >
           <Text
@@ -232,13 +226,8 @@ export default function SyncScreen() {
           >
             This Device
           </Text>
-          <Text variant="title3Emphasized" color="labelPrimary">
+          <Text variant="rowLabelTitle" color="labelPrimary">
             {deviceName}
-          </Text>
-          <Text color="labelSecondary" variant="rowLabelSubtitle">
-            {isDiscovering
-              ? "Searching for nearby devices..."
-              : "Tap the button below to start discovery"}
           </Text>
         </View>
 
@@ -263,21 +252,26 @@ export default function SyncScreen() {
               }}
             >
               {isDiscovering ? (
-                <>
-                  <ActivityIndicator size="large" color={colors.blue} />
+                <View
+                  style={{
+                    flexDirection: "column",
+                    gap: spacing.sm,
+                  }}
+                >
+                  <ActivityIndicator size="small" />
                   <Text
-                    variant="bodyRegular"
-                    color="labelTertiary"
-                    style={{ textAlign: "center", marginTop: spacing.xl }}
+                    variant="calloutRegular"
+                    color="labelSecondary"
+                    style={{ textAlign: "center" }}
                   >
                     Looking for nearby devices...{"\n"}
                     Make sure the other device has the app open.
                   </Text>
-                </>
+                </View>
               ) : (
                 <Text
                   variant="bodyRegular"
-                  color="labelTertiary"
+                  color="labelSecondary"
                   style={{ textAlign: "center" }}
                 >
                   Start discovery to find nearby devices.{"\n"}
@@ -292,7 +286,6 @@ export default function SyncScreen() {
               keyExtractor={(item) => item.peerId}
               renderItem={renderDeviceItem}
               contentContainerStyle={{ gap: spacing.sm }}
-              showsVerticalScrollIndicator={false}
             />
           )}
         </View>

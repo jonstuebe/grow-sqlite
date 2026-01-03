@@ -95,7 +95,7 @@ export default function DepositScreen() {
             }}
           >
             <Text
-              size="largeTitleEmphasized"
+              variant="largeTitleEmphasized"
               style={{ fontSize: 48, lineHeight: 56 }}
             >
               {formatCurrency(numAmount)}
@@ -105,7 +105,7 @@ export default function DepositScreen() {
 
         <View>
           <Text
-            size="caption1Emphasized"
+            variant="caption1Emphasized"
             color="labelVibrantSecondary"
             style={{
               marginBottom: spacing.sm,
@@ -136,7 +136,10 @@ export default function DepositScreen() {
             </View>
             {numAmount > 0 && account && (
               <View style={{ alignItems: "flex-end" }}>
-                <Text variant="caption1Emphasized" color="labelVibrantSecondary">
+                <Text
+                  variant="caption1Emphasized"
+                  color="labelVibrantSecondary"
+                >
                   NEW BALANCE
                 </Text>
                 <Text variant="bodyEmphasized" color="blue">
