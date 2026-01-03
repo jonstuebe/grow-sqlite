@@ -9,6 +9,8 @@ A beautiful savings goals tracker for iOS. Set financial targets, track your pro
 - **Transfers** — Move funds between accounts seamlessly
 - **Transaction History** — View all activity for each account
 - **Archive** — Completed or paused goals can be archived and restored
+- **Multi-Device Sync** — Sync data between devices using peer-to-peer connections
+- **Legacy Import** — Import accounts and transactions from the previous version of Grow
 
 ## Screenshots
 
@@ -20,7 +22,9 @@ _Coming soon_
 - [React Native](https://reactnative.dev) 0.83
 - [expo-router](https://docs.expo.dev/router/introduction/) — File-based routing
 - [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) — Local SQLite database
+- [expo-nearby-connections](https://github.com/jonstuebe/expo-nearby-connections) — Peer-to-peer sync
 - [TanStack Query](https://tanstack.com/query) — Async state management
+- [XState](https://xstate.js.org) — State machine for sync protocol
 - [Zod](https://zod.dev) — Schema validation
 - [expo-glass-effect](https://docs.expo.dev/versions/latest/sdk/glass-effect/) — iOS glass blur effects
 - [Vitest](https://vitest.dev) — Unit testing
@@ -77,18 +81,59 @@ grow/
 │   ├── withdrawal.tsx      # Make a withdrawal
 │   ├── transfer.tsx        # Transfer between accounts
 │   ├── transactions.tsx    # Transaction history
-│   └── archived.tsx        # Archived accounts
+│   ├── archived.tsx        # Archived accounts
+│   ├── sync.tsx            # Multi-device sync
+│   └── import.tsx          # Legacy data import
 ├── components/             # Reusable UI components
+├── context/                # React contexts
+│   └── nearby-connections.tsx  # P2P connection management
 ├── db/                     # Database layer
 │   ├── hooks.ts            # React Query hooks
 │   ├── queries.ts          # SQL queries
 │   ├── migrations/         # SQL migration files
-│   └── provider.tsx        # Database context provider
+│   ├── provider.tsx        # Database context provider
+│   ├── sync.ts             # Sync message types & merge logic
+│   └── import.ts           # Legacy backup import
 ├── hooks/                  # Custom React hooks
+│   ├── syncMachine.ts      # XState sync state machine
+│   ├── useSyncMachine.ts   # Sync machine React hook
+│   └── useBackgroundAdvertising.tsx  # Background P2P advertising
 ├── theme/                  # Design tokens & theming
 ├── utils/                  # Utility functions
 └── assets/                 # App icons & images
 ```
+
+## Multi-Device Sync
+
+Grow supports syncing data between multiple iOS devices using peer-to-peer connections via the Multipeer Connectivity framework.
+
+### How It Works
+
+1. Open the Sync screen on both devices
+2. Devices automatically advertise their presence while the app is in the foreground
+3. Tap "Start Discovery" to find nearby devices
+4. Select a device and tap "Sync" to initiate
+5. The sync uses a latest-wins merge strategy based on `updated_at` timestamps
+
+### Sync Protocol
+
+The sync uses a 4-message handshake:
+
+1. **SYNC_REQUEST** — Device A initiates sync
+2. **SYNC_RESPONSE** — Device B sends its accounts and transactions
+3. **SYNC_DATA** — Device A merges, then sends its data back
+4. **SYNC_ACK** — Device B merges and confirms completion
+
+Both devices end up with the same merged data set.
+
+## Legacy Import
+
+If you're upgrading from a previous version of Grow, you can import your existing data:
+
+1. Export a backup from the old app (`.db.json` file)
+2. Open Grow and navigate to Import
+3. Select your backup file
+4. Preview and confirm the import
 
 ## Building for Production
 
