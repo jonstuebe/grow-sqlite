@@ -2,7 +2,6 @@ import type { SQLiteDatabase } from "expo-sqlite";
 
 // Import migrations statically - add new imports here as you create migrations
 import migration_20260101120000 from "./migrations/20260101120000_initial_schema.sql";
-import { runSeed } from "./seed";
 
 // Migration registry - add new migrations here in order
 export const migrations: { name: string; sql: string }[] = [
@@ -88,7 +87,7 @@ async function getAllTables(db: SQLiteDatabase): Promise<string[]> {
 }
 
 /**
- * Reset database - drops ALL tables, re-runs migrations, and seeds
+ * Reset database - drops ALL tables and re-runs migrations
  * WARNING: Only use in development!
  */
 export async function resetDatabase(db: SQLiteDatabase): Promise<void> {
@@ -115,9 +114,6 @@ export async function resetDatabase(db: SQLiteDatabase): Promise<void> {
 
   // Re-run all migrations from scratch
   await runMigrations(db);
-
-  // Re-seed the database
-  await runSeed(db);
 
   console.log("[migrate] Database reset complete");
 }

@@ -17,7 +17,7 @@ const DATABASE_NAME = "grow.db";
 // Store db instance for dev menu access
 let devDb: SQLiteDatabase | null = null;
 
-// Register dev menu item to show/copy database path
+// Register dev menu items
 if (__DEV__) {
   const dbPath = `${defaultDatabaseDirectory}/${DATABASE_NAME}`;
 
@@ -36,8 +36,19 @@ if (__DEV__) {
           await resetDatabase(devDb);
           Alert.alert(
             "Database Reset",
-            "All tables dropped, migrations re-applied, and data seeded. Please reload the app."
+            "All tables dropped and migrations re-applied. Please reload the app."
           );
+        } else {
+          Alert.alert("Error", "Database not initialized yet");
+        }
+      },
+    },
+    {
+      name: "Seed Database",
+      callback: async () => {
+        if (devDb) {
+          await runSeed(devDb);
+          Alert.alert("Database Seeded", "Sample data has been added.");
         } else {
           Alert.alert("Error", "Database not initialized yet");
         }
@@ -47,7 +58,7 @@ if (__DEV__) {
 }
 
 /**
- * Initialize database - runs migrations and optionally seeds
+ * Initialize database - runs migrations
  */
 async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
   console.log("[db] Initializing database...");
@@ -65,11 +76,6 @@ async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
 
   // Run pending migrations
   await runMigrations(db);
-
-  // Seed in development mode
-  if (__DEV__) {
-    await runSeed(db);
-  }
 
   console.log("[db] Database initialization complete");
 }

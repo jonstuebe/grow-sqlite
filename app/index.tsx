@@ -1,7 +1,7 @@
 import { Link, Stack, useRouter } from "expo-router";
 import { Toolbar } from "expo-router/unstable-toolbar";
 import { SymbolView } from "expo-symbols";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { PressableGlass } from "@/components/pressable-glass";
 import { Text } from "@/components/text";
@@ -72,9 +72,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const { colors, spacing, radius } = useTheme();
 
-  const { data: totalBalance = 0 } = useTotalBalance();
-  const { data: accounts = [] } = useAccounts();
+  const { data: totalBalance = 0, isLoading: isLoadingBalance } =
+    useTotalBalance();
+  const { data: accounts = [], isLoading: isLoadingAccounts } = useAccounts();
   const { data: archivedAccounts = [] } = useArchivedAccounts();
+
+  const isLoading = isLoadingBalance || isLoadingAccounts;
 
   return (
     <>
@@ -95,59 +98,120 @@ export default function HomeScreen() {
           flex: 1,
         }}
       >
-        <ScrollView
-          contentContainerStyle={{
-            flex: 1,
-            paddingTop: spacing.lg,
-            paddingHorizontal: spacing.lg,
-            gap: spacing.md,
-          }}
-        >
-          {accounts.map((account) => (
-            <View
-              key={account.id}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.lg,
+        {isLoading ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="large" color={colors.labelSecondary} />
+          </View>
+        ) : accounts.length === 0 ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingHorizontal: spacing.xl,
+              gap: spacing.md,
+            }}
+          >
+            <SymbolView name="leaf.fill" tintColor={colors.green} size={64} />
+            <Text
+              size="title2Emphasized"
+              style={{ textAlign: "center", marginTop: spacing.md }}
+            >
+              Start Growing
+            </Text>
+            <Text
+              size="bodyRegular"
+              color="labelVibrantSecondary"
+              style={{ textAlign: "center" }}
+            >
+              Create your first savings goal to begin tracking your progress.
+            </Text>
+            <PressableGlass
+              onPress={() => router.push("/new")}
+              glassProps={{
+                style: {
+                  borderRadius: radius.xxl,
+                  paddingVertical: spacing.lg,
+                  paddingHorizontal: spacing.xl,
+                  marginTop: spacing.lg,
+                },
               }}
             >
-              <AccountRow account={account} />
-              <Link href={`/withdrawal?accountId=${account.id}`} asChild>
-                <PressableGlass
-                  glassProps={{
-                    style: {
-                      borderRadius: radius.circle,
-                      padding: spacing.sm,
-                      width: 56,
-                      height: 56,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    },
-                  }}
-                >
-                  <SymbolView name="minus" tintColor={colors.red} size={24} />
-                </PressableGlass>
-              </Link>
-              <Link href={`/deposit?accountId=${account.id}`} asChild>
-                <PressableGlass
-                  glassProps={{
-                    style: {
-                      borderRadius: radius.circle,
-                      padding: spacing.sm,
-                      width: 56,
-                      height: 56,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    },
-                  }}
-                >
-                  <SymbolView name="plus" tintColor={colors.blue} size={24} />
-                </PressableGlass>
-              </Link>
-            </View>
-          ))}
-        </ScrollView>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing.md,
+                }}
+              >
+                <SymbolView name="plus" tintColor={colors.blue} size={20} />
+                <Text size="bodyEmphasized" color="blue">
+                  Create Goal
+                </Text>
+              </View>
+            </PressableGlass>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: spacing.lg,
+              paddingHorizontal: spacing.lg,
+              paddingBottom: spacing.lg,
+              gap: spacing.md,
+            }}
+          >
+            {accounts.map((account) => (
+              <View
+                key={account.id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing.lg,
+                }}
+              >
+                <AccountRow account={account} />
+                <Link href={`/withdrawal?accountId=${account.id}`} asChild>
+                  <PressableGlass
+                    glassProps={{
+                      style: {
+                        borderRadius: radius.circle,
+                        padding: spacing.sm,
+                        width: 56,
+                        height: 56,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                    }}
+                  >
+                    <SymbolView name="minus" tintColor={colors.red} size={24} />
+                  </PressableGlass>
+                </Link>
+                <Link href={`/deposit?accountId=${account.id}`} asChild>
+                  <PressableGlass
+                    glassProps={{
+                      style: {
+                        borderRadius: radius.circle,
+                        padding: spacing.sm,
+                        width: 56,
+                        height: 56,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                    }}
+                  >
+                    <SymbolView name="plus" tintColor={colors.blue} size={24} />
+                  </PressableGlass>
+                </Link>
+              </View>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       <Toolbar>
