@@ -50,6 +50,8 @@ export interface Transaction {
 
 // Events
 export type SyncEvent =
+  | { type: "START_DISCOVERY" }
+  | { type: "STOP_DISCOVERY" }
   | { type: "START_SYNC"; peerId: string }
   | { type: "SYNC_REQUESTED"; peerId: string }
   | { type: "PEER_CONNECTED"; peerId: string }
@@ -135,7 +137,7 @@ export const syncMachine = setup({
   },
 }).createMachine({
   id: "sync",
-  initial: "discovering",
+  initial: "idle",
   context: ({ input }) => ({
     deviceName: input.deviceName,
     syncingPeerId: null,
@@ -144,9 +146,17 @@ export const syncMachine = setup({
     mergeResult: null,
   }),
   states: {
+    /** Idle state - discovery not yet started */
+    idle: {
+      on: {
+        START_DISCOVERY: "discovering",
+      },
+    },
+
     /** Discovering nearby devices and ready to sync */
     discovering: {
       on: {
+        STOP_DISCOVERY: "idle",
         START_SYNC: {
           target: "syncing.connecting",
           actions: [
@@ -272,13 +282,13 @@ export const syncMachine = setup({
     success: {
       after: {
         2000: {
-          target: "discovering",
+          target: "idle",
           actions: ["clearSyncingPeer", "clearMergeResult"],
         },
       },
       on: {
         RESET: {
-          target: "discovering",
+          target: "idle",
           actions: ["clearSyncingPeer", "clearMergeResult"],
         },
       },
@@ -287,13 +297,13 @@ export const syncMachine = setup({
     error: {
       after: {
         2000: {
-          target: "discovering",
+          target: "idle",
           actions: ["clearSyncingPeer", "clearError"],
         },
       },
       on: {
         RESET: {
-          target: "discovering",
+          target: "idle",
           actions: ["clearSyncingPeer", "clearError"],
         },
       },

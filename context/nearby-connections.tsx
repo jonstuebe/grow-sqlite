@@ -110,7 +110,6 @@ export function NearbyConnectionsProvider({
   useEffect(() => {
     const subscriptions = [
       onPeerFound((data: PeerFound) => {
-        console.log("[nearby] Peer found:", data.name, data.peerId);
         setDiscoveredPeers((prev) => {
           // Filter out our own device (by ID or name) and avoid duplicates
           const isSelf =
@@ -120,12 +119,6 @@ export function NearbyConnectionsProvider({
           const isDuplicate = prev.some((p) => p.peerId === data.peerId);
 
           if (isSelf || isDuplicate) {
-            console.log(
-              "[nearby] Filtering out peer - self:",
-              isSelf,
-              "duplicate:",
-              isDuplicate
-            );
             return prev;
           }
           return [...prev, { peerId: data.peerId, name: data.name }];
@@ -133,23 +126,16 @@ export function NearbyConnectionsProvider({
       }),
 
       onPeerLost((data: PeerLost) => {
-        console.log("[nearby] Peer lost:", data.peerId);
         setDiscoveredPeers((prev) =>
           prev.filter((p) => p.peerId !== data.peerId)
         );
       }),
 
       onInvitationReceived((data: InvitationReceived) => {
-        console.log(
-          "[nearby] Invitation received from:",
-          data.name,
-          data.peerId
-        );
         setPendingInvitation({ peerId: data.peerId, name: data.name });
       }),
 
       onConnected((data: Connected) => {
-        console.log("[nearby] Connected to:", data.name, data.peerId);
         setConnectedPeers((prev) => {
           if (prev.some((p) => p.peerId === data.peerId)) {
             return prev;
@@ -163,14 +149,12 @@ export function NearbyConnectionsProvider({
       }),
 
       onDisconnected((data: Disconnected) => {
-        console.log("[nearby] Disconnected from:", data.peerId);
         setConnectedPeers((prev) =>
           prev.filter((p) => p.peerId !== data.peerId)
         );
       }),
 
       onTextReceived((data: TextReceived) => {
-        console.log("[nearby] Text received from:", data.peerId);
         setReceivedMessages((prev) => [
           ...prev,
           { peerId: data.peerId, text: data.text, timestamp: Date.now() },
@@ -184,26 +168,21 @@ export function NearbyConnectionsProvider({
   }, []);
 
   const advertise = useCallback(async (name: string) => {
-    console.log("[nearby] Starting advertise as:", name);
     myDeviceNameRef.current = name;
     const peerId = await startAdvertise(name);
-    console.log("[nearby] Advertise started, peerId:", peerId);
     myAdvertisePeerIdRef.current = peerId;
     setMyPeerId(peerId);
     setIsAdvertising(true);
   }, []);
 
   const stopAdvertisingFn = useCallback(async () => {
-    console.log("[nearby] Stopping advertise");
     await stopAdvertise();
     setIsAdvertising(false);
   }, []);
 
   const discover = useCallback(async (name: string) => {
-    console.log("[nearby] Starting discovery as:", name);
     myDeviceNameRef.current = name;
     const peerId = await startDiscovery(name);
-    console.log("[nearby] Discovery started, peerId:", peerId);
     myDiscoveryPeerIdRef.current = peerId;
     // Only set myPeerId if not already set by advertise
     setMyPeerId((prev) => prev ?? peerId);
@@ -211,27 +190,19 @@ export function NearbyConnectionsProvider({
   }, []);
 
   const stopDiscoveringFn = useCallback(async () => {
-    console.log("[nearby] Stopping discovery");
     await stopDiscovery();
     setIsDiscovering(false);
     setDiscoveredPeers([]);
   }, []);
 
   const connect = useCallback(async (peerId: string) => {
-    console.log("[nearby] Requesting connection to:", peerId);
     await requestConnection(peerId);
-    console.log("[nearby] Connection request sent");
   }, []);
 
   const acceptInvitationFn = useCallback(async () => {
     if (pendingInvitation) {
-      console.log(
-        "[nearby] Accepting invitation from:",
-        pendingInvitation.name
-      );
       await acceptConnection(pendingInvitation.peerId);
       setPendingInvitation(null);
-      console.log("[nearby] Invitation accepted");
     }
   }, [pendingInvitation]);
 

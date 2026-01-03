@@ -50,7 +50,6 @@ export function BackgroundAdvertisingProvider({
 
   const startAdvertisingIfAllowed = useCallback(async () => {
     if (isPausedRef.current) {
-      console.log("[advertising] Paused, not starting");
       return;
     }
     await advertise(deviceName);
@@ -59,7 +58,6 @@ export function BackgroundAdvertisingProvider({
   const pauseAdvertising = useCallback(async () => {
     isPausedRef.current = true;
     await stopAdvertising();
-    console.log("[advertising] Paused");
   }, [stopAdvertising]);
 
   const resumeAdvertising = useCallback(async () => {
@@ -67,7 +65,6 @@ export function BackgroundAdvertisingProvider({
     // Only resume if app is active
     if (appStateRef.current === "active") {
       await advertise(deviceName);
-      console.log("[advertising] Resumed");
     }
   }, [deviceName, advertise]);
 
@@ -75,7 +72,7 @@ export function BackgroundAdvertisingProvider({
   useEffect(() => {
     // Start advertising immediately if app is active
     if (appStateRef.current === "active") {
-      startAdvertisingIfAllowed().catch(console.error);
+      startAdvertisingIfAllowed().catch(() => {});
     }
 
     const subscription = AppState.addEventListener("change", (nextState) => {
@@ -84,14 +81,10 @@ export function BackgroundAdvertisingProvider({
 
       if (previousState !== "active" && nextState === "active") {
         // App came to foreground - restart advertising (if not paused)
-        console.log("[advertising] App became active");
-        startAdvertisingIfAllowed().catch(console.error);
+        startAdvertisingIfAllowed().catch(() => {});
       } else if (previousState === "active" && nextState !== "active") {
         // App going to background - stop advertising
-        console.log(
-          "[advertising] App going to background, stopping advertising"
-        );
-        stopAdvertising().catch(console.error);
+        stopAdvertising().catch(() => {});
       }
     });
 

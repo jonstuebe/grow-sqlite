@@ -78,42 +78,29 @@ export function useSyncMachine({
     send: sendMessage,
   } = nearbyConnections;
 
-  // Pause advertising, start discovery on mount; stop discovery, resume advertising on unmount
-  // CRITICAL: Must await pauseAdvertising before starting discovery due to expo-nearby-connections limitation
-  useEffect(() => {
-    let isMounted = true;
+  // Manual discovery control functions
+  const startDiscovery = useCallback(async () => {
+    // First, pause advertising and wait for it to complete
+    // CRITICAL: Must await pauseAdvertising before starting discovery due to expo-nearby-connections limitation
+    await pauseAdvertising();
 
-    const startDiscovery = async () => {
-      // First, pause advertising and wait for it to complete
-      await pauseAdvertising();
+    // Start network discovery
+    await discover(deviceName);
 
-      if (!isMounted) return;
+    // Update state machine
+    send({ type: "START_DISCOVERY" });
+  }, [deviceName, discover, pauseAdvertising, send]);
 
-      // Now start discovery
-      await discover(deviceName);
-    };
+  const stopDiscovery = useCallback(async () => {
+    // Stop network discovery first
+    await stopDiscovering();
 
-    startDiscovery().catch(console.error);
+    // Resume advertising
+    await resumeAdvertising();
 
-    return () => {
-      isMounted = false;
-
-      const cleanup = async () => {
-        // Stop discovery first
-        await stopDiscovering();
-        // Then resume advertising
-        await resumeAdvertising();
-      };
-
-      cleanup().catch(() => {});
-    };
-  }, [
-    deviceName,
-    discover,
-    stopDiscovering,
-    pauseAdvertising,
-    resumeAdvertising,
-  ]);
+    // Update state machine
+    send({ type: "STOP_DISCOVERY" });
+  }, [stopDiscovering, resumeAdvertising, send]);
 
   // Watch for peer connections (for pending sync)
   useEffect(() => {
@@ -212,11 +199,7 @@ export function useSyncMachine({
         case "SYNC_RESPONSE": {
           if (state.matches({ syncing: "requesting" })) {
             // Merge their data
-            const { accountsMerged, transactionsMerged } = await applySyncData(
-              db,
-              message.accounts,
-              message.transactions
-            );
+            await applySyncData(db, message.accounts, message.transactions);
 
             // Send our data back
             const accounts = await getAllAccountRows(db);
@@ -234,10 +217,6 @@ export function useSyncMachine({
               accounts: message.accounts,
               transactions: message.transactions,
             });
-
-            console.log(
-              `Merged ${accountsMerged} accounts, ${transactionsMerged} transactions from response`
-            );
           }
           break;
         }
@@ -274,10 +253,6 @@ export function useSyncMachine({
                 transactionsMerged,
               });
             }, 100);
-
-            console.log(
-              `Merged ${accountsMerged} accounts, ${transactionsMerged} transactions from data`
-            );
           }
           break;
         }
@@ -294,7 +269,6 @@ export function useSyncMachine({
         }
       }
     } catch (error) {
-      console.error("Error handling sync message:", error);
       send({
         type: "SYNC_ERROR",
         error: error instanceof Error ? error.message : "Unknown error",
@@ -333,6 +307,7 @@ export function useSyncMachine({
   }, [send]);
 
   // Derived state for easy consumption
+  const isIdle = state.matches("idle");
   const isDiscovering = state.matches("discovering");
   const isSyncing = state.matches("syncing");
   const isSuccess = state.matches("success");
@@ -352,6 +327,7 @@ export function useSyncMachine({
     context: state.context,
 
     // Derived state
+    isIdle,
     isDiscovering,
     isSyncing,
     isSuccess,
@@ -362,6 +338,8 @@ export function useSyncMachine({
     lastError: state.context.lastError,
 
     // Actions
+    startDiscovery,
+    stopDiscovery,
     startSync,
     reset,
 

@@ -85,8 +85,7 @@ export function GlobalInvitationHandler() {
             break;
           }
         }
-      } catch (error) {
-        console.error("Error handling sync message:", error);
+      } catch {
         acceptedPeerIdRef.current = null;
         isSyncingRef.current = false;
       }

@@ -17,6 +17,7 @@ import { useBackgroundAdvertising } from "@/hooks/useBackgroundAdvertising";
 import { useSyncMachine } from "@/hooks/useSyncMachine";
 import { useTheme } from "@/hooks/useTheme";
 import { formatSyncResult } from "@/utils/format";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface DeviceItem extends Peer {
   isConnected: boolean;
@@ -27,6 +28,7 @@ export default function SyncScreen() {
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const nearbyConnections = useNearbyConnections();
+  const insets = useSafeAreaInsets();
 
   // Get the device name and advertising controls from the app-wide provider
   // Pause/resume are passed to useSyncMachine to ensure proper sequencing
@@ -34,15 +36,23 @@ export default function SyncScreen() {
     useBackgroundAdvertising();
 
   // Use the sync state machine (handles pause/resume advertising internally)
-  const { syncStatus, syncingPeerId, mergeResult, lastError, startSync } =
-    useSyncMachine({
-      deviceName,
-      db,
-      queryClient,
-      nearbyConnections,
-      pauseAdvertising,
-      resumeAdvertising,
-    });
+  const {
+    syncStatus,
+    syncingPeerId,
+    mergeResult,
+    lastError,
+    isDiscovering,
+    startSync,
+    startDiscovery,
+    stopDiscovery,
+  } = useSyncMachine({
+    deviceName,
+    db,
+    queryClient,
+    nearbyConnections,
+    pauseAdvertising,
+    resumeAdvertising,
+  });
 
   const {
     discoveredPeers,
@@ -129,18 +139,9 @@ export default function SyncScreen() {
 
   const handleSync = useCallback(
     async (peer: Peer, isConnected: boolean) => {
-      console.log(
-        "[sync] Sync button pressed for:",
-        peer.name,
-        peer.peerId,
-        "connected:",
-        isConnected
-      );
-
       try {
         await startSync(peer, isConnected);
       } catch (error) {
-        console.error("Failed to sync:", error);
         toast.error("Error", {
           description: `Failed to sync with ${peer.name}`,
         });
@@ -222,7 +223,14 @@ export default function SyncScreen() {
           Sync
         </Stack.Header.Title>
       </Stack.Header>
-      <View style={{ flex: 1, padding: spacing.lg, gap: spacing.lg }}>
+      <View
+        style={{
+          flex: 1,
+          padding: spacing.lg,
+          paddingBottom: insets.bottom + spacing.lg,
+          gap: spacing.lg,
+        }}
+      >
         {/* Device Info */}
         <View
           style={{
@@ -255,7 +263,9 @@ export default function SyncScreen() {
               color: colors.labelTertiary,
             }}
           >
-            Searching for nearby devices...
+            {isDiscovering
+              ? "Searching for nearby devices..."
+              : "Tap the button below to start discovery"}
           </Text>
         </View>
 
@@ -273,7 +283,7 @@ export default function SyncScreen() {
           </Text>
 
           {devices.length === 0 ? (
-            // Searching for devices
+            // Empty state
             <View
               style={{
                 flex: 1,
@@ -282,18 +292,33 @@ export default function SyncScreen() {
                 paddingHorizontal: spacing.xxl,
               }}
             >
-              <ActivityIndicator size="large" color={colors.blue} />
-              <Text
-                style={{
-                  ...typography.bodyRegular,
-                  color: colors.labelTertiary,
-                  textAlign: "center",
-                  marginTop: spacing.xl,
-                }}
-              >
-                Looking for nearby devices...{"\n"}
-                Make sure the other device has the app open.
-              </Text>
+              {isDiscovering ? (
+                <>
+                  <ActivityIndicator size="large" color={colors.blue} />
+                  <Text
+                    style={{
+                      ...typography.bodyRegular,
+                      color: colors.labelTertiary,
+                      textAlign: "center",
+                      marginTop: spacing.xl,
+                    }}
+                  >
+                    Looking for nearby devices...{"\n"}
+                    Make sure the other device has the app open.
+                  </Text>
+                </>
+              ) : (
+                <Text
+                  style={{
+                    ...typography.bodyRegular,
+                    color: colors.labelTertiary,
+                    textAlign: "center",
+                  }}
+                >
+                  Start discovery to find nearby devices.{"\n"}
+                  Make sure the other device has the app open.
+                </Text>
+              )}
             </View>
           ) : (
             // Devices found
@@ -306,6 +331,26 @@ export default function SyncScreen() {
             />
           )}
         </View>
+
+        {/* Discovery Toggle Button */}
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.blue,
+            paddingVertical: spacing.lg,
+            borderRadius: radius.lg,
+            alignItems: "center",
+          }}
+          onPress={isDiscovering ? stopDiscovery : startDiscovery}
+        >
+          <Text
+            style={{
+              ...typography.bodyEmphasized,
+              color: colors.white,
+            }}
+          >
+            {isDiscovering ? "Stop Discovery" : "Start Discovery"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </>
   );
