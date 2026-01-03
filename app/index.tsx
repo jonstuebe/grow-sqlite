@@ -52,13 +52,13 @@ function AccountRow({ account }: { account: Account }) {
             }}
           >
             <View>
-              <Text size="rowLabelTitle">{account.name}</Text>
-              <Text size="rowLabelSubtitle" color="labelVibrantSecondary">
+              <Text variant="rowLabelTitle">{account.name}</Text>
+              <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
                 {formatCurrency(account.current_amount)} of{" "}
                 {formatCurrency(account.target_amount)}
               </Text>
             </View>
-            <Text size="rowLabelSubtitle" color="labelVibrantSecondary">
+            <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
               {Math.round(progress)}%
             </Text>
           </View>
@@ -92,6 +92,12 @@ export default function HomeScreen() {
         >
           {formatCurrency(totalBalance)}
         </Stack.Header.Title>
+        <Stack.Header.Right>
+          <Stack.Header.Button
+            icon="arrow.2.circlepath"
+            onPress={() => router.push("/sync")}
+          />
+        </Stack.Header.Right>
       </Stack.Header>
 
       <View
@@ -121,13 +127,13 @@ export default function HomeScreen() {
           >
             <SymbolView name="leaf.fill" tintColor={colors.green} size={64} />
             <Text
-              size="title2Emphasized"
+              variant="title2Emphasized"
               style={{ textAlign: "center", marginTop: spacing.md }}
             >
               Start Growing
             </Text>
             <Text
-              size="bodyRegular"
+              variant="bodyRegular"
               color="labelVibrantSecondary"
               style={{ textAlign: "center" }}
             >
@@ -153,7 +159,7 @@ export default function HomeScreen() {
                   }}
                 >
                   <SymbolView name="plus" tintColor={colors.white} size={20} />
-                  <Text size="bodyEmphasized" color="white">
+                  <Text variant="bodyEmphasized" color="white">
                     Create Goal
                   </Text>
                 </View>
@@ -181,7 +187,7 @@ export default function HomeScreen() {
                     tintColor={colors.labelVibrantSecondary}
                     size={20}
                   />
-                  <Text size="bodyEmphasized" color="labelVibrantSecondary">
+                  <Text variant="bodyEmphasized" color="labelVibrantSecondary">
                     Import Backup
                   </Text>
                 </View>

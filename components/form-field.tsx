@@ -46,7 +46,7 @@ interface FormFieldLabelProps {
 
 function Label({ children }: FormFieldLabelProps) {
   return (
-    <Text size="rowLabelTitle" color="labelVibrantPrimary" style={{ flex: 1 }}>
+    <Text variant="rowLabelTitle" color="labelVibrantPrimary" style={{ flex: 1 }}>
       {children}
     </Text>
   );
@@ -76,7 +76,7 @@ interface FormInputAddonProps {
 function InputAddon({ children }: FormInputAddonProps) {
   if (typeof children === "string") {
     children = (
-      <Text size="rowLabelTitle" color="labelVibrantPrimary">
+      <Text variant="rowLabelTitle" color="labelVibrantPrimary">
         {children}
       </Text>
     );

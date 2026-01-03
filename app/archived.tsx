@@ -46,8 +46,8 @@ function ArchivedAccountRow({
           }}
         >
           <View>
-            <Text size="rowLabelTitle">{account.name}</Text>
-            <Text size="rowLabelSubtitle" color="labelVibrantSecondary">
+            <Text variant="rowLabelTitle">{account.name}</Text>
+            <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
               {formatCurrency(account.current_amount)}
             </Text>
           </View>

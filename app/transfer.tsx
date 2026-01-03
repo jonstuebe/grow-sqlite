@@ -106,7 +106,7 @@ export default function TransferScreen() {
             position: "relative",
           }}
         >
-          <Text size="caption1Emphasized" color="labelVibrantSecondary">
+          <Text variant="caption1Emphasized" color="labelVibrantSecondary">
             AMOUNT
           </Text>
           <View

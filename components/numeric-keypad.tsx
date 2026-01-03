@@ -54,7 +54,7 @@ export function NumericKeypad({
                   size={24}
                 />
               ) : (
-                <Text size="title1Emphasized" style={{ fontSize: 28 }}>
+                <Text variant="title1Emphasized" style={{ fontSize: 28 }}>
                   {key}
                 </Text>
               )}

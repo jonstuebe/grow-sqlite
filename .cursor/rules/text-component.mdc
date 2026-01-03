@@ -1,0 +1,66 @@
+---
+description: Text component styling conventions
+globs: app/**/*.tsx, components/**/*.tsx
+---
+
+# Text Component Styling
+
+When using the `Text` component from `@/components/text`, always prefer the `color` and `variant` props over using the `style` prop for color and typography.
+
+## Rules
+
+### Use the `color` prop for text color
+
+```tsx
+// ✅ Good
+<Text color="labelPrimary">Hello</Text>
+<Text color="labelSecondary">Subtitle</Text>
+<Text color={isPositive ? "green" : "red"}>Amount</Text>
+
+// ❌ Bad
+<Text style={{ color: colors.labelPrimary }}>Hello</Text>
+<Text style={{ ...typography.bodyRegular, color: colors.labelSecondary }}>Subtitle</Text>
+```
+
+### Use the `variant` prop for typography
+
+```tsx
+// ✅ Good
+<Text variant="bodyRegular">Body text</Text>
+<Text variant="title3Emphasized">Title</Text>
+<Text variant="caption1Regular" color="labelSecondary">Caption</Text>
+
+// ❌ Bad
+<Text style={{ ...typography.bodyRegular }}>Body text</Text>
+<Text style={{ ...typography.title3Emphasized, color: colors.labelPrimary }}>Title</Text>
+```
+
+### The `style` prop should only be used for layout properties
+
+The `style` prop is acceptable for:
+- `textAlign`
+- `marginTop`, `marginBottom`, `margin`
+- `paddingHorizontal`, `paddingVertical`, `padding`
+- `textTransform`
+- Custom font size overrides not in the typography tokens
+
+```tsx
+// ✅ Good - layout properties in style, color/variant as props
+<Text variant="bodyRegular" color="labelSecondary" style={{ textAlign: "center" }}>
+  Centered text
+</Text>
+
+<Text variant="caption1Emphasized" color="labelSecondary" style={{ textTransform: "uppercase" }}>
+  SECTION HEADER
+</Text>
+
+// ✅ Good - custom sizing override (when token doesn't exist)
+<Text variant="largeTitleEmphasized" style={{ fontSize: 48, lineHeight: 56 }}>
+  $1,234.56
+</Text>
+```
+
+## Available Props
+
+- `color`: Any key from the `colors` token (e.g., `"labelPrimary"`, `"green"`, `"white"`)
+- `variant`: Any key from the `typography` token (e.g., `"bodyRegular"`, `"title3Emphasized"`, `"caption1Regular"`)

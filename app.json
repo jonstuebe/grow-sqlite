@@ -18,6 +18,10 @@
       "bundleIdentifier": "com.jonstuebe.grow",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSBonjourServices": ["_grow-sync._tcp"],
+        "NSLocalNetworkUsageDescription": "This app uses the local network to sync data with other devices running Grow"
       }
     },
     "web": {
@@ -30,6 +34,12 @@
         "expo-document-picker",
         {
           "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      [
+        "expo-nearby-connections",
+        {
+          "serviceType": "grow-sync"
         }
       ]
     ],

@@ -58,10 +58,10 @@ export function AccountPicker({
             }}
           >
             <View>
-              <Text size="bodyRegular" color="labelVibrantPrimary">
+              <Text variant="bodyRegular" color="labelVibrantPrimary">
                 {selectedAccount?.name ?? placeholder}
               </Text>
-              <Text size="rowLabelSubtitle" color="labelVibrantSecondary">
+              <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
                 {selectedAccount
                   ? formatCurrency(selectedAccount.current_amount)
                   : emptySubtitle}

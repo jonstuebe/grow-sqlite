@@ -64,7 +64,7 @@ function TransactionRow({
       ? transaction.amount
       : -transaction.amount;
 
-  const amountColor = displayAmount >= 0 ? colors.green : colors.red;
+  const amountColorKey = displayAmount >= 0 ? "green" : "red";
   const amountPrefix = displayAmount >= 0 ? "+" : "";
 
   return (
@@ -85,11 +85,11 @@ function TransactionRow({
         size={28}
       />
       <View style={{ flex: 1 }}>
-        <Text size="caption1Regular" color="labelVibrantSecondary">
+        <Text variant="caption1Regular" color="labelVibrantSecondary">
           {formatDate(transaction.created_at)}
         </Text>
       </View>
-      <Text size="bodyEmphasized" style={{ color: amountColor }}>
+      <Text variant="bodyEmphasized" color={amountColorKey}>
         {amountPrefix}
         {formatCurrency(Math.abs(displayAmount))}
       </Text>
