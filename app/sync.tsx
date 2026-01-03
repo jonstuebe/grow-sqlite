@@ -15,6 +15,7 @@ import { useSQLiteContext } from "@/db/provider";
 import { useBackgroundAdvertising } from "@/hooks/useBackgroundAdvertising";
 import { useSyncMachine } from "@/hooks/useSyncMachine";
 import { useTheme } from "@/hooks/useTheme";
+import { formatSyncResult } from "@/utils/format";
 
 interface DeviceItem extends Peer {
   isConnected: boolean;
@@ -60,6 +61,7 @@ export default function SyncScreen() {
   // Combine discovered and connected peers into a unified list
   const devices = useMemo<DeviceItem[]>(() => {
     const connectedIds = new Set(connectedPeers.map((p) => p.peerId));
+    const connectedNames = new Set(connectedPeers.map((p) => p.name));
 
     // Start with connected peers (marked as connected)
     const connected: DeviceItem[] = connectedPeers.map((p) => ({
@@ -67,9 +69,11 @@ export default function SyncScreen() {
       isConnected: true,
     }));
 
-    // Add discovered peers that aren't already connected
+    // Add discovered peers that aren't already connected (by ID or name)
+    // This handles the case where a device may have different peer IDs
+    // for advertising vs discovery
     const discovered: DeviceItem[] = discoveredPeers
-      .filter((p) => !connectedIds.has(p.peerId))
+      .filter((p) => !connectedIds.has(p.peerId) && !connectedNames.has(p.name))
       .map((p) => ({
         ...p,
         isConnected: false,
@@ -103,7 +107,10 @@ export default function SyncScreen() {
     if (isSuccess && mergeResult) {
       Alert.alert(
         "Sync Complete",
-        `Synced ${mergeResult.accountsMerged} accounts and ${mergeResult.transactionsMerged} transactions`
+        formatSyncResult(
+          mergeResult.accountsMerged,
+          mergeResult.transactionsMerged
+        )
       );
     }
   }, [isSuccess, mergeResult]);

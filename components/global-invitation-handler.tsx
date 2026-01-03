@@ -20,6 +20,7 @@ import {
   createSyncAck,
   type SyncMessage,
 } from "@/db/sync";
+import { formatSyncResult } from "@/utils/format";
 
 export function GlobalInvitationHandler() {
   const db = useSQLiteContext();
@@ -74,7 +75,7 @@ export function GlobalInvitationHandler() {
             // Show success feedback
             Alert.alert(
               "Sync Complete",
-              `Merged ${accountsMerged} accounts and ${transactionsMerged} transactions`,
+              formatSyncResult(accountsMerged, transactionsMerged),
               [{ text: "OK" }]
             );
 
