@@ -176,6 +176,141 @@ export function useSyncMachine({
     sendResponse();
   }, [state.value, state.context.syncingPeerId, db, sendMessage, send]);
 
+  // Handle incoming sync messages
+  const handleSyncMessage = useCallback(
+    async (peerId: string, message: SyncMessage) => {
+      try {
+        switch (message.type) {
+          case "SYNC_REQUEST": {
+            // Handle if we're in discovering state (ready to receive)
+            if (state.matches("discovering")) {
+              // Check protocol version compatibility
+              if (
+                !areVersionsCompatible(
+                  SYNC_PROTOCOL_VERSION,
+                  message.protocolVersion
+                )
+              ) {
+                // Send version mismatch response and don't proceed
+                const mismatchResponse = createSyncVersionMismatch(
+                  message.protocolVersion
+                );
+                await sendMessage(peerId, JSON.stringify(mismatchResponse));
+                return;
+              }
+              send({ type: "SYNC_REQUESTED", peerId });
+            }
+            break;
+          }
+
+          case "SYNC_RESPONSE": {
+            if (state.matches({ syncing: "requesting" })) {
+              // Check protocol version compatibility
+              if (
+                !areVersionsCompatible(
+                  SYNC_PROTOCOL_VERSION,
+                  message.protocolVersion
+                )
+              ) {
+                send({
+                  type: "VERSION_MISMATCH",
+                  localVersion: SYNC_PROTOCOL_VERSION,
+                  remoteVersion: message.protocolVersion,
+                });
+                return;
+              }
+
+              // Merge their data
+              await applySyncData(db, message.accounts, message.transactions);
+
+              // Send our data back
+              const accounts = await getAllAccountRows(db);
+              const transactions = await getAllTransactionRows(db);
+              const syncData = createSyncData(accounts, transactions);
+              await sendMessage(peerId, JSON.stringify(syncData));
+
+              // Invalidate queries to refresh UI
+              await queryClient.invalidateQueries();
+
+              // Transition to awaiting ack
+              send({
+                type: "SYNC_RESPONSE_RECEIVED",
+                peerId,
+                accounts: message.accounts,
+                transactions: message.transactions,
+              });
+            }
+            break;
+          }
+
+          case "SYNC_DATA": {
+            if (state.matches({ syncing: "responding" })) {
+              // Merge their data and send ack
+              const { accountsMerged, transactionsMerged } =
+                await applySyncData(db, message.accounts, message.transactions);
+
+              const ack = createSyncAck(
+                true,
+                accountsMerged,
+                transactionsMerged
+              );
+              await sendMessage(peerId, JSON.stringify(ack));
+
+              // Invalidate queries to refresh UI
+              await queryClient.invalidateQueries();
+
+              // Transition to success
+              send({
+                type: "SYNC_DATA_RECEIVED",
+                peerId,
+                accounts: message.accounts,
+                transactions: message.transactions,
+              });
+
+              // Manually trigger success since we completed
+              setTimeout(() => {
+                send({
+                  type: "SYNC_ACK_RECEIVED",
+                  success: true,
+                  accountsMerged,
+                  transactionsMerged,
+                });
+              }, 100);
+            }
+            break;
+          }
+
+          case "SYNC_ACK": {
+            send({
+              type: "SYNC_ACK_RECEIVED",
+              success: message.success,
+              accountsMerged: message.accountsMerged,
+              transactionsMerged: message.transactionsMerged,
+              error: message.error,
+            });
+            break;
+          }
+
+          case "SYNC_VERSION_MISMATCH": {
+            // The other device rejected our sync request due to version mismatch
+            send({
+              type: "VERSION_MISMATCH",
+              localVersion: SYNC_PROTOCOL_VERSION,
+              remoteVersion: message.localVersion, // Their local version is what we're incompatible with
+            });
+            break;
+          }
+        }
+      } catch (error) {
+        send({
+          type: "SYNC_ERROR",
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+    [state.value, db, queryClient, sendMessage, send]
+  );
+
   // Process incoming sync messages
   useEffect(() => {
     if (receivedMessages.length === 0) return;
@@ -186,125 +321,7 @@ export function useSyncMachine({
     if (!syncMessage) return;
 
     handleSyncMessage(lastMessage.peerId, syncMessage);
-  }, [receivedMessages]);
-
-  const handleSyncMessage = async (peerId: string, message: SyncMessage) => {
-    try {
-      switch (message.type) {
-        case "SYNC_REQUEST": {
-          // Handle if we're in discovering state (ready to receive)
-          if (state.matches("discovering")) {
-            // Check protocol version compatibility
-            if (!areVersionsCompatible(SYNC_PROTOCOL_VERSION, message.protocolVersion)) {
-              // Send version mismatch response and don't proceed
-              const mismatchResponse = createSyncVersionMismatch(message.protocolVersion);
-              await sendMessage(peerId, JSON.stringify(mismatchResponse));
-              return;
-            }
-            send({ type: "SYNC_REQUESTED", peerId });
-          }
-          break;
-        }
-
-        case "SYNC_RESPONSE": {
-          if (state.matches({ syncing: "requesting" })) {
-            // Check protocol version compatibility
-            if (!areVersionsCompatible(SYNC_PROTOCOL_VERSION, message.protocolVersion)) {
-              send({
-                type: "VERSION_MISMATCH",
-                localVersion: SYNC_PROTOCOL_VERSION,
-                remoteVersion: message.protocolVersion,
-              });
-              return;
-            }
-
-            // Merge their data
-            await applySyncData(db, message.accounts, message.transactions);
-
-            // Send our data back
-            const accounts = await getAllAccountRows(db);
-            const transactions = await getAllTransactionRows(db);
-            const syncData = createSyncData(accounts, transactions);
-            await sendMessage(peerId, JSON.stringify(syncData));
-
-            // Invalidate queries to refresh UI
-            await queryClient.invalidateQueries();
-
-            // Transition to awaiting ack
-            send({
-              type: "SYNC_RESPONSE_RECEIVED",
-              peerId,
-              accounts: message.accounts,
-              transactions: message.transactions,
-            });
-          }
-          break;
-        }
-
-        case "SYNC_DATA": {
-          if (state.matches({ syncing: "responding" })) {
-            // Merge their data and send ack
-            const { accountsMerged, transactionsMerged } = await applySyncData(
-              db,
-              message.accounts,
-              message.transactions
-            );
-
-            const ack = createSyncAck(true, accountsMerged, transactionsMerged);
-            await sendMessage(peerId, JSON.stringify(ack));
-
-            // Invalidate queries to refresh UI
-            await queryClient.invalidateQueries();
-
-            // Transition to success
-            send({
-              type: "SYNC_DATA_RECEIVED",
-              peerId,
-              accounts: message.accounts,
-              transactions: message.transactions,
-            });
-
-            // Manually trigger success since we completed
-            setTimeout(() => {
-              send({
-                type: "SYNC_ACK_RECEIVED",
-                success: true,
-                accountsMerged,
-                transactionsMerged,
-              });
-            }, 100);
-          }
-          break;
-        }
-
-        case "SYNC_ACK": {
-          send({
-            type: "SYNC_ACK_RECEIVED",
-            success: message.success,
-            accountsMerged: message.accountsMerged,
-            transactionsMerged: message.transactionsMerged,
-            error: message.error,
-          });
-          break;
-        }
-
-        case "SYNC_VERSION_MISMATCH": {
-          // The other device rejected our sync request due to version mismatch
-          send({
-            type: "VERSION_MISMATCH",
-            localVersion: SYNC_PROTOCOL_VERSION,
-            remoteVersion: message.localVersion, // Their local version is what we're incompatible with
-          });
-          break;
-        }
-      }
-    } catch (error) {
-      send({
-        type: "SYNC_ERROR",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  };
+  }, [receivedMessages, handleSyncMessage]);
 
   // Action handlers
   const startSync = useCallback(
