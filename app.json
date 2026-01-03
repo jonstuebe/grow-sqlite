@@ -2,7 +2,7 @@
   "expo": {
     "name": "grow",
     "slug": "grow",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "scheme": "grow",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,12 +13,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "experiments": {
-      "typedRoutes": true
-    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.jonstuebe.grow"
+      "bundleIdentifier": "com.jonstuebe.grow",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,6 +31,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-sqlite"]
+    "plugins": ["expo-router", "expo-sqlite"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "69773d23-1afe-433f-990f-1af17490a4d7"
+      }
+    },
+    "owner": "jonstuebe"
   }
 }
