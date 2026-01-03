@@ -97,6 +97,21 @@ grow/
 
 ### iOS (TestFlight)
 
+The quickest way to deploy to TestFlight is with the `npx testflight` command:
+
+```bash
+npx testflight
+```
+
+This interactive wizard handles everything in one step:
+
+- Apple Developer sign-in and credentials
+- Distribution certificates and provisioning profiles
+- Production build
+- App Store Connect submission
+
+For more control, you can run the EAS commands separately:
+
 ```bash
 # Build for production
 eas build --platform ios --profile production
@@ -119,4 +134,3 @@ Migrations are located in `db/migrations/` and run automatically on app start.
 ## License
 
 MIT © [Jon Stuebe](https://jonstuebe.com)
-
