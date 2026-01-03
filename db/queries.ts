@@ -416,3 +416,190 @@ export async function deleteTransaction(
 ): Promise<void> {
   await db.runAsync("DELETE FROM transactions WHERE id = ?", [id]);
 }
+
+// ============================================================================
+// Sync Queries
+// ============================================================================
+
+/**
+ * Get all account rows (raw, without computed fields) for sync
+ */
+export async function getAllAccountRows(
+  db: SQLiteDatabase
+): Promise<AccountRow[]> {
+  return db.getAllAsync<AccountRow>("SELECT * FROM accounts");
+}
+
+/**
+ * Get all account rows updated since a timestamp
+ */
+export async function getAccountsSince(
+  db: SQLiteDatabase,
+  since: number
+): Promise<AccountRow[]> {
+  return db.getAllAsync<AccountRow>(
+    "SELECT * FROM accounts WHERE updated_at > ?",
+    [since]
+  );
+}
+
+/**
+ * Get all transaction rows (raw) for sync
+ */
+export async function getAllTransactionRows(
+  db: SQLiteDatabase
+): Promise<Transaction[]> {
+  return db.getAllAsync<Transaction>("SELECT * FROM transactions");
+}
+
+/**
+ * Get all transactions updated since a timestamp
+ */
+export async function getTransactionsSince(
+  db: SQLiteDatabase,
+  since: number
+): Promise<Transaction[]> {
+  return db.getAllAsync<Transaction>(
+    "SELECT * FROM transactions WHERE updated_at > ?",
+    [since]
+  );
+}
+
+/**
+ * Upsert an account from sync (insert if new, update if remote is newer)
+ * Uses raw values (cents) - no conversion needed
+ */
+export async function upsertAccountFromSync(
+  db: SQLiteDatabase,
+  account: AccountRow
+): Promise<void> {
+  // Check if account exists and compare updated_at
+  const existing = await db.getFirstAsync<{ updated_at: number }>(
+    "SELECT updated_at FROM accounts WHERE id = ?",
+    [account.id]
+  );
+
+  if (!existing) {
+    // Insert new account
+    await db.runAsync(
+      `INSERT INTO accounts (id, name, target_amount, goal_enabled, archived_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        account.id,
+        account.name,
+        account.target_amount,
+        account.goal_enabled,
+        account.archived_at,
+        account.created_at,
+        account.updated_at,
+      ]
+    );
+  } else if (account.updated_at > existing.updated_at) {
+    // Update existing account (remote is newer)
+    await db.runAsync(
+      `UPDATE accounts 
+       SET name = ?, target_amount = ?, goal_enabled = ?, archived_at = ?, updated_at = ?
+       WHERE id = ?`,
+      [
+        account.name,
+        account.target_amount,
+        account.goal_enabled,
+        account.archived_at,
+        account.updated_at,
+        account.id,
+      ]
+    );
+  }
+  // If local is newer or same, do nothing
+}
+
+/**
+ * Upsert a transaction from sync (insert if new, update if remote is newer)
+ * Uses raw values (cents) - no conversion needed
+ */
+export async function upsertTransactionFromSync(
+  db: SQLiteDatabase,
+  transaction: Transaction
+): Promise<void> {
+  // Check if transaction exists and compare updated_at
+  const existing = await db.getFirstAsync<{ updated_at: number }>(
+    "SELECT updated_at FROM transactions WHERE id = ?",
+    [transaction.id]
+  );
+
+  if (!existing) {
+    // Insert new transaction
+    await db.runAsync(
+      `INSERT INTO transactions (id, account_id, amount, type, related_account_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        transaction.id,
+        transaction.account_id,
+        transaction.amount,
+        transaction.type,
+        transaction.related_account_id,
+        transaction.created_at,
+        transaction.updated_at,
+      ]
+    );
+  } else if (transaction.updated_at > existing.updated_at) {
+    // Update existing transaction (remote is newer)
+    await db.runAsync(
+      `UPDATE transactions 
+       SET account_id = ?, amount = ?, type = ?, related_account_id = ?, updated_at = ?
+       WHERE id = ?`,
+      [
+        transaction.account_id,
+        transaction.amount,
+        transaction.type,
+        transaction.related_account_id,
+        transaction.updated_at,
+        transaction.id,
+      ]
+    );
+  }
+  // If local is newer or same, do nothing
+}
+
+/**
+ * Bulk upsert accounts and transactions from sync within a transaction
+ * Returns counts of merged records
+ */
+export async function applySyncData(
+  db: SQLiteDatabase,
+  accounts: AccountRow[],
+  transactions: Transaction[]
+): Promise<{ accountsMerged: number; transactionsMerged: number }> {
+  let accountsMerged = 0;
+  let transactionsMerged = 0;
+
+  await db.withTransactionAsync(async () => {
+    // Upsert accounts first (transactions depend on them)
+    for (const account of accounts) {
+      const existing = await db.getFirstAsync<{ updated_at: number }>(
+        "SELECT updated_at FROM accounts WHERE id = ?",
+        [account.id]
+      );
+
+      if (!existing || account.updated_at > existing.updated_at) {
+        await upsertAccountFromSync(db, account);
+        accountsMerged++;
+      }
+    }
+
+    // Upsert transactions
+    for (const transaction of transactions) {
+      const existing = await db.getFirstAsync<{ updated_at: number }>(
+        "SELECT updated_at FROM transactions WHERE id = ?",
+        [transaction.id]
+      );
+
+      if (!existing || transaction.updated_at > existing.updated_at) {
+        await upsertTransactionFromSync(db, transaction);
+        transactionsMerged++;
+      }
+    }
+  });
+
+  return { accountsMerged, transactionsMerged };
+}

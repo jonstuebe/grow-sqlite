@@ -92,6 +92,12 @@ export default function HomeScreen() {
         >
           {formatCurrency(totalBalance)}
         </Stack.Header.Title>
+        <Stack.Header.Right>
+          <Stack.Header.Button
+            icon="arrow.2.circlepath"
+            onPress={() => router.push("/sync")}
+          />
+        </Stack.Header.Right>
       </Stack.Header>
 
       <View
