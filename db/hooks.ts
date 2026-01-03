@@ -1,27 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useSQLiteContext } from "./provider";
 import {
-  getAccounts,
-  getAccount,
-  getTotalBalance,
+  archiveAccount,
   createAccount,
   createAccountWithInitialBalance,
-  updateAccount,
-  deleteAccount,
-  archiveAccount,
-  getTransactions,
-  getTransaction,
   createTransaction,
+  deleteAccount,
   deleteTransaction,
+  getAccount,
+  getAccounts,
+  getArchivedAccounts,
+  getTotalBalance,
+  getTransaction,
+  getTransactions,
+  unarchiveAccount,
+  updateAccount,
   type CreateAccountWithInitialBalanceInput,
 } from "./queries";
 import type {
-  Account,
-  Transaction,
   CreateAccountInput,
-  UpdateAccountInput,
   CreateTransactionInput,
+  UpdateAccountInput,
 } from "./types";
 
 // ============================================================================
@@ -30,10 +30,13 @@ import type {
 
 export const queryKeys = {
   accounts: ["accounts"] as const,
+  archivedAccounts: ["archivedAccounts"] as const,
   account: (id: string) => ["accounts", id] as const,
   totalBalance: ["totalBalance"] as const,
   transactions: (accountId?: string) =>
-    accountId ? (["transactions", accountId] as const) : (["transactions"] as const),
+    accountId
+      ? (["transactions", accountId] as const)
+      : (["transactions"] as const),
   transaction: (id: string) => ["transactions", "detail", id] as const,
 };
 
@@ -50,6 +53,18 @@ export function useAccounts() {
   return useQuery({
     queryKey: queryKeys.accounts,
     queryFn: () => getAccounts(db),
+  });
+}
+
+/**
+ * Fetch all archived accounts
+ */
+export function useArchivedAccounts() {
+  const db = useSQLiteContext();
+
+  return useQuery({
+    queryKey: queryKeys.archivedAccounts,
+    queryFn: () => getArchivedAccounts(db),
   });
 }
 
@@ -124,7 +139,9 @@ export function useUpdateAccount() {
       updateAccount(db, id, input),
     onSuccess: (account) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      queryClient.invalidateQueries({ queryKey: queryKeys.account(account.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.account(account.id),
+      });
     },
   });
 }
@@ -157,6 +174,24 @@ export function useArchiveAccount() {
     mutationFn: (id: string) => archiveAccount(db, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.totalBalance });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archivedAccounts });
+    },
+  });
+}
+
+/**
+ * Unarchive an account (restore from soft delete)
+ */
+export function useUnarchiveAccount() {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => unarchiveAccount(db, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archivedAccounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.totalBalance });
     },
   });

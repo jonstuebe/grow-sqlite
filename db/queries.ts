@@ -51,6 +51,42 @@ export async function getAccounts(db: SQLiteDatabase): Promise<Account[]> {
 }
 
 /**
+ *
+ * Get all archived accounts with their computed current_amount from transactions
+ */
+export async function getArchivedAccounts(
+  db: SQLiteDatabase
+): Promise<Account[]> {
+  const rows = await db.getAllAsync<AccountRow & { current_amount: number }>(`
+    SELECT 
+      a.*,
+      COALESCE(
+        (SELECT SUM(
+          CASE 
+            WHEN t.type = 'deposit' THEN t.amount
+            WHEN t.type = 'withdrawal' THEN -t.amount
+            WHEN t.type = 'transfer' AND t.account_id = a.id THEN -t.amount
+            WHEN t.type = 'transfer' AND t.related_account_id = a.id THEN t.amount
+            ELSE 0
+          END
+        ) FROM transactions t 
+        WHERE t.account_id = a.id OR t.related_account_id = a.id),
+        0
+      ) as current_amount
+    FROM accounts a
+    WHERE a.archived_at IS NOT NULL
+    ORDER BY a.archived_at DESC
+  `);
+
+  return rows.map((row) => ({
+    ...row,
+    goal_enabled: Boolean(row.goal_enabled),
+    target_amount: centsToDollars(row.target_amount),
+    current_amount: centsToDollars(row.current_amount),
+  }));
+}
+
+/**
  * Get a single account by ID with computed current_amount
  * Note: Converts cents from DB to dollars for app consumption
  */
@@ -138,7 +174,8 @@ export async function createAccount(
 }
 
 /** Input for creating an account with an initial balance */
-export interface CreateAccountWithInitialBalanceInput extends CreateAccountInput {
+export interface CreateAccountWithInitialBalanceInput
+  extends CreateAccountInput {
   initialBalance?: number;
   goalEnabled?: boolean;
 }
@@ -251,6 +288,20 @@ export async function archiveAccount(
   await db.runAsync(
     "UPDATE accounts SET archived_at = ?, updated_at = ? WHERE id = ?",
     [now, now, id]
+  );
+}
+
+/**
+ * Unarchive an account (restore from soft delete)
+ */
+export async function unarchiveAccount(
+  db: SQLiteDatabase,
+  id: string
+): Promise<void> {
+  const now = Date.now();
+  await db.runAsync(
+    "UPDATE accounts SET archived_at = NULL, updated_at = ? WHERE id = ?",
+    [now, id]
   );
 }
 

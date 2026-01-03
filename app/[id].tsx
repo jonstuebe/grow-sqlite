@@ -39,6 +39,7 @@ export default function AccountDetailScreen() {
         name: account.name,
         goalEnabled: account.goal_enabled,
         targetAmount: account.target_amount.toString(),
+        initialBalance: account.current_amount.toString(),
       });
     }
   }, [account, initialize]);

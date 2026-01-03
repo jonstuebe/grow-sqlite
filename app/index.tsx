@@ -5,7 +5,7 @@ import { ScrollView, View } from "react-native";
 
 import { PressableGlass } from "@/components/pressable-glass";
 import { Text } from "@/components/text";
-import { useAccounts, useTotalBalance } from "@/db/hooks";
+import { useAccounts, useArchivedAccounts, useTotalBalance } from "@/db/hooks";
 import type { Account } from "@/db/types";
 import { useTheme } from "@/hooks/useTheme";
 import { formatCurrency, getProgress } from "@/utils/format";
@@ -74,6 +74,7 @@ export default function HomeScreen() {
 
   const { data: totalBalance = 0 } = useTotalBalance();
   const { data: accounts = [] } = useAccounts();
+  const { data: archivedAccounts = [] } = useArchivedAccounts();
 
   return (
     <>
@@ -154,6 +155,12 @@ export default function HomeScreen() {
           <Toolbar.Button
             icon="arrow.up.arrow.down"
             onPress={() => router.push("/transfer")}
+          />
+        ) : null}
+        {archivedAccounts.length > 0 ? (
+          <Toolbar.Button
+            icon="archivebox"
+            onPress={() => router.push("/archived")}
           />
         ) : null}
         <Toolbar.Spacer sharesBackground={false} />
