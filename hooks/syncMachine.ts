@@ -2,7 +2,7 @@
  * XState machine definition for sync flow
  * This file contains only the pure machine definition without React dependencies
  * for easier testing.
- * 
+ *
  * Note: Advertising is handled at the app level via BackgroundAdvertisingProvider.
  * This machine only handles discovery and the sync protocol.
  */
@@ -173,6 +173,23 @@ export const syncMachine = setup({
       states: {
         /** Waiting for connection to be established (initiator only) */
         connecting: {
+          after: {
+            // Timeout after 30 seconds if connection is not established
+            // This handles cases where the invitation is declined or ignored
+            15000: {
+              target: "#sync.error",
+              actions: [
+                "clearPendingSyncPeer",
+                {
+                  type: "assignError",
+                  params: () => ({
+                    error:
+                      "Connection timed out. The invitation may have been declined.",
+                  }),
+                },
+              ],
+            },
+          },
           on: {
             PEER_CONNECTED: {
               target: "requesting",
@@ -233,7 +250,9 @@ export const syncMachine = setup({
             actions: [
               {
                 type: "assignError",
-                params: ({ event }) => ({ error: event.error ?? "Sync failed" }),
+                params: ({ event }) => ({
+                  error: event.error ?? "Sync failed",
+                }),
               },
             ],
           },

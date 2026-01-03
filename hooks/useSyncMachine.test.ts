@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createActor } from "xstate";
 import { syncMachine, type SyncContext, type SyncEvent } from "./syncMachine";
 
@@ -97,6 +97,54 @@ describe("syncMachine", () => {
       expect(actor.getSnapshot().context.pendingSyncPeerId).toBeNull();
 
       actor.stop();
+    });
+
+    it("should timeout after 30 seconds if connection is not established", () => {
+      vi.useFakeTimers();
+
+      const actor = createTestActor();
+      actor.start();
+
+      actor.send({ type: "START_SYNC", peerId: "peer-123" });
+      expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
+
+      // Advance time by 30 seconds
+      vi.advanceTimersByTime(30000);
+
+      expect(actor.getSnapshot().value).toBe("error");
+      expect(actor.getSnapshot().context.lastError).toBe(
+        "Connection timed out. The invitation may have been declined."
+      );
+      expect(actor.getSnapshot().context.pendingSyncPeerId).toBeNull();
+
+      actor.stop();
+      vi.useRealTimers();
+    });
+
+    it("should NOT timeout if connection is established before 30 seconds", () => {
+      vi.useFakeTimers();
+
+      const actor = createTestActor();
+      actor.start();
+
+      actor.send({ type: "START_SYNC", peerId: "peer-123" });
+      expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
+
+      // Advance time by 15 seconds (before timeout)
+      vi.advanceTimersByTime(15000);
+
+      // Connection established
+      actor.send({ type: "PEER_CONNECTED", peerId: "peer-123" });
+      expect(actor.getSnapshot().value).toEqual({ syncing: "requesting" });
+
+      // Advance past the original timeout point
+      vi.advanceTimersByTime(20000);
+
+      // Should still be in requesting, not error
+      expect(actor.getSnapshot().value).toEqual({ syncing: "requesting" });
+
+      actor.stop();
+      vi.useRealTimers();
     });
   });
 
