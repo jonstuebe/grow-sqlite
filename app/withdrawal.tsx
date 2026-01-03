@@ -86,7 +86,7 @@ export default function WithdrawalScreen() {
             position: "relative",
           }}
         >
-          <Text size="caption1Emphasized" color="labelVibrantSecondary">
+          <Text variant="caption1Emphasized" color="labelVibrantSecondary">
             AMOUNT
           </Text>
           <View
@@ -145,10 +145,10 @@ export default function WithdrawalScreen() {
             }}
           >
             <View>
-              <Text size="bodyRegular" color="labelVibrantPrimary">
+              <Text variant="bodyRegular" color="labelVibrantPrimary">
                 {account?.name ?? "Loading..."}
               </Text>
-              <Text size="rowLabelSubtitle" color="labelVibrantSecondary">
+              <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
                 {account
                   ? formatCurrency(account.current_amount)
                   : "Loading..."}
@@ -156,7 +156,7 @@ export default function WithdrawalScreen() {
             </View>
             {numAmount > 0 && account && (
               <View style={{ alignItems: "flex-end" }}>
-                <Text size="caption1Emphasized" color="labelVibrantSecondary">
+                <Text variant="caption1Emphasized" color="labelVibrantSecondary">
                   NEW BALANCE
                 </Text>
                 <Text

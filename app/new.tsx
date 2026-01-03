@@ -86,7 +86,7 @@ export default function NewAccountScreen() {
         }}
       >
         <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-          <Text size="caption1Emphasized" color="labelVibrantSecondary">
+          <Text variant="caption1Emphasized" color="labelVibrantSecondary">
             INITIAL BALANCE
           </Text>
           <Text

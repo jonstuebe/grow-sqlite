@@ -24,7 +24,7 @@ interface DeviceItem extends Peer {
 }
 
 export default function SyncScreen() {
-  const { colors, spacing, radius, typography } = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const nearbyConnections = useNearbyConnections();
@@ -167,20 +167,10 @@ export default function SyncScreen() {
           }}
         >
           <View style={{ flex: 1, gap: spacing.xxs }}>
-            <Text
-              style={{
-                ...typography.calloutEmphasized,
-                color: colors.labelPrimary,
-              }}
-            >
+            <Text variant="calloutEmphasized" color="labelPrimary">
               {item.name}
             </Text>
-            <Text
-              style={{
-                ...typography.caption1Regular,
-                color: colors.labelTertiary,
-              }}
-            >
+            <Text variant="caption1Regular" color="labelTertiary">
               {item.isConnected ? "Connected" : "Nearby"}
             </Text>
           </View>
@@ -200,12 +190,7 @@ export default function SyncScreen() {
             {isSyncingThisPeer ? (
               <ActivityIndicator size="small" color={colors.white} />
             ) : (
-              <Text
-                style={{
-                  ...typography.subheadlineEmphasized,
-                  color: colors.white,
-                }}
-              >
+              <Text variant="subheadlineEmphasized" color="white">
                 Sync
               </Text>
             )}
@@ -213,7 +198,7 @@ export default function SyncScreen() {
         </View>
       );
     },
-    [colors, radius, spacing, typography, syncStatus, syncingPeerId, handleSync]
+    [colors, radius, spacing, syncStatus, syncingPeerId, handleSync]
   );
 
   return (
@@ -241,28 +226,16 @@ export default function SyncScreen() {
           }}
         >
           <Text
-            style={{
-              ...typography.caption1Emphasized,
-              textTransform: "uppercase",
-              color: colors.labelSecondary,
-            }}
+            variant="caption1Emphasized"
+            color="labelSecondary"
+            style={{ textTransform: "uppercase" }}
           >
             This Device
           </Text>
-          <Text
-            style={{
-              ...typography.title3Emphasized,
-              color: colors.labelPrimary,
-            }}
-          >
+          <Text variant="title3Emphasized" color="labelPrimary">
             {deviceName}
           </Text>
-          <Text
-            style={{
-              ...typography.caption1Regular,
-              color: colors.labelTertiary,
-            }}
-          >
+          <Text color="labelSecondary" variant="rowLabelSubtitle">
             {isDiscovering
               ? "Searching for nearby devices..."
               : "Tap the button below to start discovery"}
@@ -272,12 +245,9 @@ export default function SyncScreen() {
         {/* Nearby Devices */}
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              ...typography.caption1Emphasized,
-              textTransform: "uppercase",
-              color: colors.labelSecondary,
-              marginBottom: spacing.sm,
-            }}
+            variant="caption1Emphasized"
+            color="labelSecondary"
+            style={{ textTransform: "uppercase", marginBottom: spacing.sm }}
           >
             Nearby Devices ({devices.length})
           </Text>
@@ -296,12 +266,9 @@ export default function SyncScreen() {
                 <>
                   <ActivityIndicator size="large" color={colors.blue} />
                   <Text
-                    style={{
-                      ...typography.bodyRegular,
-                      color: colors.labelTertiary,
-                      textAlign: "center",
-                      marginTop: spacing.xl,
-                    }}
+                    variant="bodyRegular"
+                    color="labelTertiary"
+                    style={{ textAlign: "center", marginTop: spacing.xl }}
                   >
                     Looking for nearby devices...{"\n"}
                     Make sure the other device has the app open.
@@ -309,11 +276,9 @@ export default function SyncScreen() {
                 </>
               ) : (
                 <Text
-                  style={{
-                    ...typography.bodyRegular,
-                    color: colors.labelTertiary,
-                    textAlign: "center",
-                  }}
+                  variant="bodyRegular"
+                  color="labelTertiary"
+                  style={{ textAlign: "center" }}
                 >
                   Start discovery to find nearby devices.{"\n"}
                   Make sure the other device has the app open.
@@ -342,12 +307,7 @@ export default function SyncScreen() {
           }}
           onPress={isDiscovering ? stopDiscovery : startDiscovery}
         >
-          <Text
-            style={{
-              ...typography.bodyEmphasized,
-              color: colors.white,
-            }}
-          >
+          <Text variant="bodyEmphasized" color="white">
             {isDiscovering ? "Stop Discovery" : "Start Discovery"}
           </Text>
         </TouchableOpacity>

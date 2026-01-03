@@ -136,7 +136,7 @@ export default function AccountDetailScreen() {
       >
         <View style={{ gap: spacing.md }}>
           <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-            <Text size="caption1Emphasized" color="labelVibrantSecondary">
+            <Text variant="caption1Emphasized" color="labelVibrantSecondary">
               CURRENT BALANCE
             </Text>
             <Text
@@ -146,7 +146,7 @@ export default function AccountDetailScreen() {
               {formatCurrency(account.current_amount)}
             </Text>
             {goalEnabled && account.target_amount > 0 && (
-              <Text size="bodyRegular" color="labelVibrantSecondary">
+              <Text variant="bodyRegular" color="labelVibrantSecondary">
                 {Math.round(progress)}% of{" "}
                 {formatCurrency(account.target_amount)}
               </Text>
@@ -209,7 +209,7 @@ export default function AccountDetailScreen() {
                   gap: spacing.md,
                 }}
               >
-                <Text size="rowLabelTitle">View Transactions</Text>
+                <Text variant="rowLabelTitle">View Transactions</Text>
               </View>
               <SymbolView
                 name="chevron.right"
@@ -235,7 +235,7 @@ export default function AccountDetailScreen() {
             }}
           >
             <SymbolView name="archivebox" tintColor={colors.red} size={20} />
-            <Text size="bodyRegular" color="red">
+            <Text variant="bodyRegular" color="red">
               Archive Account
             </Text>
           </PressableGlass>

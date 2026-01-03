@@ -187,7 +187,7 @@ export default function ImportScreen() {
                 }}
               >
                 <SymbolView name="folder" tintColor={colors.white} size={20} />
-                <Text size="bodyEmphasized" color="white">
+                <Text variant="bodyEmphasized" color="white">
                   Select File
                 </Text>
               </View>
@@ -205,7 +205,7 @@ export default function ImportScreen() {
             }}
           >
             <ActivityIndicator size="large" color={colors.blue} />
-            <Text size="bodyRegular" color="labelVibrantSecondary">
+            <Text variant="bodyRegular" color="labelVibrantSecondary">
               Reading file...
             </Text>
           </View>
@@ -219,7 +219,7 @@ export default function ImportScreen() {
                 tintColor={colors.green}
                 size={48}
               />
-              <Text size="title3Emphasized">Ready to Import</Text>
+              <Text variant="title3Emphasized">Ready to Import</Text>
             </View>
 
             <View
@@ -236,10 +236,10 @@ export default function ImportScreen() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text size="bodyRegular" color="labelVibrantSecondary">
+                <Text variant="bodyRegular" color="labelVibrantSecondary">
                   Accounts
                 </Text>
-                <Text size="bodyEmphasized">{state.preview.accountCount}</Text>
+                <Text variant="bodyEmphasized">{state.preview.accountCount}</Text>
               </View>
               <View
                 style={{
@@ -247,10 +247,10 @@ export default function ImportScreen() {
                   justifyContent: "space-between",
                 }}
               >
-                <Text size="bodyRegular" color="labelVibrantSecondary">
+                <Text variant="bodyRegular" color="labelVibrantSecondary">
                   Transactions
                 </Text>
-                <Text size="bodyEmphasized">
+                <Text variant="bodyEmphasized">
                   {state.preview.transactionCount}
                 </Text>
               </View>
@@ -277,7 +277,7 @@ export default function ImportScreen() {
                   }}
                 >
                   <View>
-                    <Text size="bodyEmphasized">{account.name}</Text>
+                    <Text variant="bodyEmphasized">{account.name}</Text>
                     {account.hasGoal && account.goalAmount && (
                       <Text
                         size="caption1Regular"
@@ -287,7 +287,7 @@ export default function ImportScreen() {
                       </Text>
                     )}
                   </View>
-                  <Text size="bodyRegular" color="labelVibrantSecondary">
+                  <Text variant="bodyRegular" color="labelVibrantSecondary">
                     {formatCurrency(account.balance)}
                   </Text>
                 </View>
@@ -306,7 +306,7 @@ export default function ImportScreen() {
                   tintColor: colors.blue,
                 }}
               >
-                <Text size="bodyEmphasized" color="white">
+                <Text variant="bodyEmphasized" color="white">
                   Import {state.preview.accountCount} Account
                   {state.preview.accountCount !== 1 ? "s" : ""}
                 </Text>
@@ -321,7 +321,7 @@ export default function ImportScreen() {
                   },
                 }}
               >
-                <Text size="bodyEmphasized" color="labelVibrantSecondary">
+                <Text variant="bodyEmphasized" color="labelVibrantSecondary">
                   Select Different File
                 </Text>
               </PressableGlass>
@@ -339,7 +339,7 @@ export default function ImportScreen() {
             }}
           >
             <ActivityIndicator size="large" color={colors.blue} />
-            <Text size="bodyRegular" color="labelVibrantSecondary">
+            <Text variant="bodyRegular" color="labelVibrantSecondary">
               Importing data...
             </Text>
           </View>
@@ -359,7 +359,7 @@ export default function ImportScreen() {
               tintColor={colors.green}
               size={64}
             />
-            <Text size="title2Emphasized" style={{ textAlign: "center" }}>
+            <Text variant="title2Emphasized" style={{ textAlign: "center" }}>
               Import Complete!
             </Text>
             <Text
@@ -384,7 +384,7 @@ export default function ImportScreen() {
                 },
               }}
             >
-              <Text size="bodyEmphasized" color="white">
+              <Text variant="bodyEmphasized" color="white">
                 Done
               </Text>
             </PressableGlass>
@@ -405,7 +405,7 @@ export default function ImportScreen() {
               tintColor={colors.red}
               size={64}
             />
-            <Text size="title2Emphasized" style={{ textAlign: "center" }}>
+            <Text variant="title2Emphasized" style={{ textAlign: "center" }}>
               Import Failed
             </Text>
             <Text
@@ -426,7 +426,7 @@ export default function ImportScreen() {
                 },
               }}
             >
-              <Text size="bodyEmphasized" color="blue">
+              <Text variant="bodyEmphasized" color="blue">
                 Try Again
               </Text>
             </PressableGlass>
