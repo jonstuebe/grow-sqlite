@@ -2,6 +2,9 @@
  * XState machine definition for sync flow
  * This file contains only the pure machine definition without React dependencies
  * for easier testing.
+ * 
+ * Note: Advertising is handled at the app level via BackgroundAdvertisingProvider.
+ * This machine only handles discovery and the sync protocol.
  */
 
 import { setup, assign } from "xstate";
@@ -21,8 +24,6 @@ export interface SyncContext {
   pendingSyncPeerId: string | null;
   lastError: string | null;
   mergeResult: MergeResult | null;
-  /** Track previous mode to return to after sync */
-  previousMode: "advertising" | "discovering";
 }
 
 /** Account row type for sync messages */
@@ -49,8 +50,6 @@ export interface Transaction {
 
 // Events
 export type SyncEvent =
-  | { type: "FIND_DEVICES" }
-  | { type: "STOP_DISCOVERING" }
   | { type: "START_SYNC"; peerId: string }
   | { type: "SYNC_REQUESTED"; peerId: string }
   | { type: "PEER_CONNECTED"; peerId: string }
@@ -126,12 +125,6 @@ export const syncMachine = setup({
     clearMergeResult: assign({
       mergeResult: () => null,
     }),
-    savePreviousModeAdvertising: assign({
-      previousMode: () => "advertising" as const,
-    }),
-    savePreviousModeDiscovering: assign({
-      previousMode: () => "discovering" as const,
-    }),
   },
   guards: {
     hasPendingSyncPeer: ({ context }) => context.pendingSyncPeerId !== null,
@@ -142,25 +135,21 @@ export const syncMachine = setup({
   },
 }).createMachine({
   id: "sync",
-  initial: "advertising",
+  initial: "discovering",
   context: ({ input }) => ({
     deviceName: input.deviceName,
     syncingPeerId: null,
     pendingSyncPeerId: null,
     lastError: null,
     mergeResult: null,
-    previousMode: "advertising" as const,
   }),
   states: {
-    advertising: {
+    /** Discovering nearby devices and ready to sync */
+    discovering: {
       on: {
-        FIND_DEVICES: {
-          target: "discovering",
-        },
         START_SYNC: {
           target: "syncing.connecting",
           actions: [
-            { type: "savePreviousModeAdvertising" },
             {
               type: "assignPendingSyncPeer",
               params: ({ event }) => ({ peerId: event.peerId }),
@@ -170,27 +159,8 @@ export const syncMachine = setup({
         SYNC_REQUESTED: {
           target: "syncing.responding",
           actions: [
-            { type: "savePreviousModeAdvertising" },
             {
               type: "assignSyncingPeer",
-              params: ({ event }) => ({ peerId: event.peerId }),
-            },
-          ],
-        },
-      },
-    },
-
-    discovering: {
-      on: {
-        STOP_DISCOVERING: {
-          target: "advertising",
-        },
-        START_SYNC: {
-          target: "syncing.connecting",
-          actions: [
-            { type: "savePreviousModeDiscovering" },
-            {
-              type: "assignPendingSyncPeer",
               params: ({ event }) => ({ peerId: event.peerId }),
             },
           ],
@@ -282,61 +252,32 @@ export const syncMachine = setup({
 
     success: {
       after: {
-        2000: [
-          {
-            target: "discovering",
-            guard: ({ context }) => context.previousMode === "discovering",
-            actions: ["clearSyncingPeer", "clearMergeResult"],
-          },
-          {
-            target: "advertising",
-            actions: ["clearSyncingPeer", "clearMergeResult"],
-          },
-        ],
+        2000: {
+          target: "discovering",
+          actions: ["clearSyncingPeer", "clearMergeResult"],
+        },
       },
       on: {
-        RESET: [
-          {
-            target: "discovering",
-            guard: ({ context }) => context.previousMode === "discovering",
-            actions: ["clearSyncingPeer", "clearMergeResult"],
-          },
-          {
-            target: "advertising",
-            actions: ["clearSyncingPeer", "clearMergeResult"],
-          },
-        ],
+        RESET: {
+          target: "discovering",
+          actions: ["clearSyncingPeer", "clearMergeResult"],
+        },
       },
     },
 
     error: {
       after: {
-        2000: [
-          {
-            target: "discovering",
-            guard: ({ context }) => context.previousMode === "discovering",
-            actions: ["clearSyncingPeer", "clearError"],
-          },
-          {
-            target: "advertising",
-            actions: ["clearSyncingPeer", "clearError"],
-          },
-        ],
+        2000: {
+          target: "discovering",
+          actions: ["clearSyncingPeer", "clearError"],
+        },
       },
       on: {
-        RESET: [
-          {
-            target: "discovering",
-            guard: ({ context }) => context.previousMode === "discovering",
-            actions: ["clearSyncingPeer", "clearError"],
-          },
-          {
-            target: "advertising",
-            actions: ["clearSyncingPeer", "clearError"],
-          },
-        ],
+        RESET: {
+          target: "discovering",
+          actions: ["clearSyncingPeer", "clearError"],
+        },
       },
     },
   },
 });
-

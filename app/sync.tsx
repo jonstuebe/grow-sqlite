@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,9 +12,9 @@ import {
 import { Text } from "@/components/text";
 import { useNearbyConnections, type Peer } from "@/context/nearby-connections";
 import { useSQLiteContext } from "@/db/provider";
+import { useBackgroundAdvertising } from "@/hooks/useBackgroundAdvertising";
 import { useSyncMachine } from "@/hooks/useSyncMachine";
 import { useTheme } from "@/hooks/useTheme";
-import { generateDeviceName } from "@/utils/device-name";
 
 interface DeviceItem extends Peer {
   isConnected: boolean;
@@ -26,27 +26,28 @@ export default function SyncScreen() {
   const queryClient = useQueryClient();
   const nearbyConnections = useNearbyConnections();
 
-  // Generate a fun device name on mount
-  const [deviceName] = useState(() => generateDeviceName());
+  // Get the device name and advertising controls from the app-wide provider
+  // Pause/resume are passed to useSyncMachine to ensure proper sequencing
+  const { deviceName, pauseAdvertising, resumeAdvertising } =
+    useBackgroundAdvertising();
 
-  // Use the sync state machine
+  // Use the sync state machine (handles pause/resume advertising internally)
   const {
-    isAdvertising,
     isDiscovering,
-    isSyncing,
     isSuccess,
     isError,
     syncStatus,
     syncingPeerId,
     mergeResult,
     lastError,
-    findDevices,
     startSync,
   } = useSyncMachine({
     deviceName,
     db,
     queryClient,
     nearbyConnections,
+    pauseAdvertising,
+    resumeAdvertising,
   });
 
   const {
@@ -239,9 +240,7 @@ export default function SyncScreen() {
               color: colors.labelTertiary,
             }}
           >
-            {isDiscovering
-              ? "Searching for devices..."
-              : "Ready to receive sync requests"}
+            Searching for nearby devices...
           </Text>
         </View>
 
@@ -255,51 +254,11 @@ export default function SyncScreen() {
               marginBottom: spacing.sm,
             }}
           >
-            {isDiscovering ? `Nearby Devices (${devices.length})` : "Sync"}
+            Nearby Devices ({devices.length})
           </Text>
 
-          {isAdvertising ? (
-            // Receiver mode - show button to find devices
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                paddingHorizontal: spacing.xxl,
-                gap: spacing.xl,
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.bodyRegular,
-                  color: colors.labelTertiary,
-                  textAlign: "center",
-                }}
-              >
-                Ready to receive sync requests.{"\n"}
-                Or tap below to find other devices.
-              </Text>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: colors.blue,
-                  paddingHorizontal: spacing.xl,
-                  paddingVertical: spacing.lg,
-                  borderRadius: radius.lg,
-                }}
-                onPress={findDevices}
-              >
-                <Text
-                  style={{
-                    ...typography.calloutEmphasized,
-                    color: colors.white,
-                  }}
-                >
-                  Find Devices
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : devices.length === 0 ? (
-            // Initiator mode - searching
+          {devices.length === 0 ? (
+            // Searching for devices
             <View
               style={{
                 flex: 1,
@@ -317,12 +276,12 @@ export default function SyncScreen() {
                   marginTop: spacing.xl,
                 }}
               >
-                Searching for nearby devices...{"\n"}
-                Make sure the other device has the Sync screen open.
+                Looking for nearby devices...{"\n"}
+                Make sure the other device has the app open.
               </Text>
             </View>
           ) : (
-            // Initiator mode - devices found
+            // Devices found
             <FlatList
               data={devices}
               keyExtractor={(item) => item.peerId}

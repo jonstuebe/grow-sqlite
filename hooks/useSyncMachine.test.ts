@@ -10,11 +10,11 @@ describe("syncMachine", () => {
   }
 
   describe("initial state", () => {
-    it("should start in advertising state", () => {
+    it("should start in discovering state", () => {
       const actor = createTestActor();
       actor.start();
 
-      expect(actor.getSnapshot().value).toBe("advertising");
+      expect(actor.getSnapshot().value).toBe("discovering");
       actor.stop();
     });
 
@@ -28,23 +28,12 @@ describe("syncMachine", () => {
       expect(context.pendingSyncPeerId).toBeNull();
       expect(context.lastError).toBeNull();
       expect(context.mergeResult).toBeNull();
-      expect(context.previousMode).toBe("advertising");
 
       actor.stop();
     });
   });
 
-  describe("advertising state", () => {
-    it("should transition to discovering on FIND_DEVICES", () => {
-      const actor = createTestActor();
-      actor.start();
-
-      actor.send({ type: "FIND_DEVICES" });
-
-      expect(actor.getSnapshot().value).toBe("discovering");
-      actor.stop();
-    });
-
+  describe("discovering state", () => {
     it("should transition to syncing.connecting on START_SYNC", () => {
       const actor = createTestActor();
       actor.start();
@@ -53,7 +42,6 @@ describe("syncMachine", () => {
 
       expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
       expect(actor.getSnapshot().context.pendingSyncPeerId).toBe("peer-123");
-      expect(actor.getSnapshot().context.previousMode).toBe("advertising");
       actor.stop();
     });
 
@@ -65,36 +53,6 @@ describe("syncMachine", () => {
 
       expect(actor.getSnapshot().value).toEqual({ syncing: "responding" });
       expect(actor.getSnapshot().context.syncingPeerId).toBe("peer-123");
-      expect(actor.getSnapshot().context.previousMode).toBe("advertising");
-      actor.stop();
-    });
-  });
-
-  describe("discovering state", () => {
-    it("should transition to advertising on STOP_DISCOVERING", () => {
-      const actor = createTestActor();
-      actor.start();
-
-      actor.send({ type: "FIND_DEVICES" });
-      expect(actor.getSnapshot().value).toBe("discovering");
-
-      actor.send({ type: "STOP_DISCOVERING" });
-      expect(actor.getSnapshot().value).toBe("advertising");
-
-      actor.stop();
-    });
-
-    it("should transition to syncing.connecting on START_SYNC", () => {
-      const actor = createTestActor();
-      actor.start();
-
-      actor.send({ type: "FIND_DEVICES" });
-      actor.send({ type: "START_SYNC", peerId: "peer-456" });
-
-      expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
-      expect(actor.getSnapshot().context.pendingSyncPeerId).toBe("peer-456");
-      expect(actor.getSnapshot().context.previousMode).toBe("discovering");
-
       actor.stop();
     });
   });
@@ -246,11 +204,11 @@ describe("syncMachine", () => {
   });
 
   describe("success state", () => {
-    it("should return to advertising on RESET when previousMode is advertising", () => {
+    it("should return to discovering on RESET", () => {
       const actor = createTestActor();
       actor.start();
 
-      // Start sync from advertising mode
+      // Start sync
       actor.send({ type: "START_SYNC", peerId: "peer-123" });
       actor.send({ type: "PEER_CONNECTED", peerId: "peer-123" });
       actor.send({
@@ -261,45 +219,19 @@ describe("syncMachine", () => {
       });
 
       expect(actor.getSnapshot().value).toBe("success");
-      expect(actor.getSnapshot().context.previousMode).toBe("advertising");
-
-      actor.send({ type: "RESET" });
-
-      expect(actor.getSnapshot().value).toBe("advertising");
-      expect(actor.getSnapshot().context.syncingPeerId).toBeNull();
-      expect(actor.getSnapshot().context.mergeResult).toBeNull();
-
-      actor.stop();
-    });
-
-    it("should return to discovering on RESET when previousMode is discovering", () => {
-      const actor = createTestActor();
-      actor.start();
-
-      // Start sync from discovering mode
-      actor.send({ type: "FIND_DEVICES" });
-      actor.send({ type: "START_SYNC", peerId: "peer-123" });
-      actor.send({ type: "PEER_CONNECTED", peerId: "peer-123" });
-      actor.send({
-        type: "SYNC_ACK_RECEIVED",
-        success: true,
-        accountsMerged: 1,
-        transactionsMerged: 2,
-      });
-
-      expect(actor.getSnapshot().value).toBe("success");
-      expect(actor.getSnapshot().context.previousMode).toBe("discovering");
 
       actor.send({ type: "RESET" });
 
       expect(actor.getSnapshot().value).toBe("discovering");
+      expect(actor.getSnapshot().context.syncingPeerId).toBeNull();
+      expect(actor.getSnapshot().context.mergeResult).toBeNull();
 
       actor.stop();
     });
   });
 
   describe("error state", () => {
-    it("should return to advertising on RESET when previousMode is advertising", () => {
+    it("should return to discovering on RESET", () => {
       const actor = createTestActor();
       actor.start();
 
@@ -307,30 +239,11 @@ describe("syncMachine", () => {
       actor.send({ type: "CONNECTION_FAILED", error: "Timeout" });
 
       expect(actor.getSnapshot().value).toBe("error");
-      expect(actor.getSnapshot().context.previousMode).toBe("advertising");
-
-      actor.send({ type: "RESET" });
-
-      expect(actor.getSnapshot().value).toBe("advertising");
-      expect(actor.getSnapshot().context.lastError).toBeNull();
-
-      actor.stop();
-    });
-
-    it("should return to discovering on RESET when previousMode is discovering", () => {
-      const actor = createTestActor();
-      actor.start();
-
-      actor.send({ type: "FIND_DEVICES" });
-      actor.send({ type: "START_SYNC", peerId: "peer-123" });
-      actor.send({ type: "CONNECTION_FAILED", error: "Timeout" });
-
-      expect(actor.getSnapshot().value).toBe("error");
-      expect(actor.getSnapshot().context.previousMode).toBe("discovering");
 
       actor.send({ type: "RESET" });
 
       expect(actor.getSnapshot().value).toBe("discovering");
+      expect(actor.getSnapshot().context.lastError).toBeNull();
 
       actor.stop();
     });
@@ -341,22 +254,18 @@ describe("syncMachine", () => {
       const actor = createTestActor();
       actor.start();
 
-      // 1. Start in advertising
-      expect(actor.getSnapshot().value).toBe("advertising");
-
-      // 2. Find devices
-      actor.send({ type: "FIND_DEVICES" });
+      // 1. Start in discovering
       expect(actor.getSnapshot().value).toBe("discovering");
 
-      // 3. Start sync with discovered peer
+      // 2. Start sync with discovered peer
       actor.send({ type: "START_SYNC", peerId: "peer-123" });
       expect(actor.getSnapshot().value).toEqual({ syncing: "connecting" });
 
-      // 4. Peer connects
+      // 3. Peer connects
       actor.send({ type: "PEER_CONNECTED", peerId: "peer-123" });
       expect(actor.getSnapshot().value).toEqual({ syncing: "requesting" });
 
-      // 5. Receive response
+      // 4. Receive response
       actor.send({
         type: "SYNC_RESPONSE_RECEIVED",
         peerId: "peer-123",
@@ -365,7 +274,7 @@ describe("syncMachine", () => {
       });
       expect(actor.getSnapshot().value).toEqual({ syncing: "processingResponse" });
 
-      // 6. Receive ack
+      // 5. Receive ack
       actor.send({
         type: "SYNC_ACK_RECEIVED",
         success: true,
@@ -378,7 +287,7 @@ describe("syncMachine", () => {
         transactionsMerged: 7,
       });
 
-      // 7. Reset returns to discovering (previous mode)
+      // 6. Reset returns to discovering
       actor.send({ type: "RESET" });
       expect(actor.getSnapshot().value).toBe("discovering");
 
@@ -391,8 +300,8 @@ describe("syncMachine", () => {
       const actor = createTestActor();
       actor.start();
 
-      // 1. Start in advertising (ready to receive)
-      expect(actor.getSnapshot().value).toBe("advertising");
+      // 1. Start in discovering (ready to receive)
+      expect(actor.getSnapshot().value).toBe("discovering");
 
       // 2. Receive sync request from another device
       actor.send({ type: "SYNC_REQUESTED", peerId: "peer-456" });
@@ -417,12 +326,11 @@ describe("syncMachine", () => {
       });
       expect(actor.getSnapshot().value).toBe("success");
 
-      // 5. Reset returns to advertising (previous mode)
+      // 5. Reset returns to discovering
       actor.send({ type: "RESET" });
-      expect(actor.getSnapshot().value).toBe("advertising");
+      expect(actor.getSnapshot().value).toBe("discovering");
 
       actor.stop();
     });
   });
 });
-

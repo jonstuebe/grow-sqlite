@@ -1,5 +1,8 @@
 /**
  * React hook for using the sync state machine
+ *
+ * Note: Advertising is handled at the app level via BackgroundAdvertisingProvider.
+ * This hook manages discovery and the sync protocol.
  */
 
 import { useCallback, useEffect } from "react";
@@ -43,13 +46,15 @@ export interface UseSyncMachineOptions {
   nearbyConnections: {
     connectedPeers: Peer[];
     receivedMessages: ReceivedMessage[];
-    advertise: (name: string) => Promise<void>;
-    stopAdvertising: () => Promise<void>;
     discover: (name: string) => Promise<void>;
     stopDiscovering: () => Promise<void>;
     connect: (peerId: string) => Promise<void>;
     send: (peerId: string, data: string) => Promise<void>;
   };
+  /** Pause background advertising before starting discovery */
+  pauseAdvertising: () => Promise<void>;
+  /** Resume background advertising after stopping discovery */
+  resumeAdvertising: () => Promise<void>;
 }
 
 export function useSyncMachine({
@@ -57,49 +62,66 @@ export function useSyncMachine({
   db,
   queryClient,
   nearbyConnections,
+  pauseAdvertising,
+  resumeAdvertising,
 }: UseSyncMachineOptions) {
-  const [state, send, actorRef] = useMachine(syncMachine, {
+  const [state, send] = useMachine(syncMachine, {
     input: { deviceName },
   });
 
   const {
     connectedPeers,
     receivedMessages,
-    advertise,
-    stopAdvertising,
     discover,
     stopDiscovering,
     connect,
     send: sendMessage,
   } = nearbyConnections;
 
-  // Handle mode transitions - start/stop advertising/discovery
+  // Pause advertising, start discovery on mount; stop discovery, resume advertising on unmount
+  // CRITICAL: Must await pauseAdvertising before starting discovery due to expo-nearby-connections limitation
   useEffect(() => {
-    const handleModeChange = async () => {
-      if (state.matches("advertising")) {
-        await stopDiscovering().catch(() => {});
-        await advertise(deviceName).catch(console.error);
-      } else if (state.matches("discovering")) {
-        await stopAdvertising().catch(() => {});
-        await discover(deviceName).catch(console.error);
-      }
+    let isMounted = true;
+
+    const startDiscovery = async () => {
+      // First, pause advertising and wait for it to complete
+      await pauseAdvertising();
+
+      if (!isMounted) return;
+
+      // Now start discovery
+      await discover(deviceName);
     };
 
-    handleModeChange();
+    startDiscovery().catch(console.error);
+
+    return () => {
+      isMounted = false;
+
+      const cleanup = async () => {
+        // Stop discovery first
+        await stopDiscovering();
+        // Then resume advertising
+        await resumeAdvertising();
+      };
+
+      cleanup().catch(() => {});
+    };
   }, [
-    state.value,
     deviceName,
-    advertise,
-    stopAdvertising,
     discover,
     stopDiscovering,
+    pauseAdvertising,
+    resumeAdvertising,
   ]);
 
   // Watch for peer connections (for pending sync)
   useEffect(() => {
     const pendingPeerId = state.context.pendingSyncPeerId;
     if (pendingPeerId && state.matches({ syncing: "connecting" })) {
-      const isConnected = connectedPeers.some((p) => p.peerId === pendingPeerId);
+      const isConnected = connectedPeers.some(
+        (p) => p.peerId === pendingPeerId
+      );
       if (isConnected) {
         send({ type: "PEER_CONNECTED", peerId: pendingPeerId });
       }
@@ -109,14 +131,23 @@ export function useSyncMachine({
   // Send SYNC_REQUEST when entering requesting state
   useEffect(() => {
     const sendRequest = async () => {
-      if (state.matches({ syncing: "requesting" }) && state.context.syncingPeerId) {
+      if (
+        state.matches({ syncing: "requesting" }) &&
+        state.context.syncingPeerId
+      ) {
         try {
           const request = createSyncRequest(0);
-          await sendMessage(state.context.syncingPeerId, JSON.stringify(request));
+          await sendMessage(
+            state.context.syncingPeerId,
+            JSON.stringify(request)
+          );
         } catch (error) {
           send({
             type: "SYNC_ERROR",
-            error: error instanceof Error ? error.message : "Failed to send sync request",
+            error:
+              error instanceof Error
+                ? error.message
+                : "Failed to send sync request",
           });
         }
       }
@@ -128,16 +159,25 @@ export function useSyncMachine({
   // Handle responding state - send our data as response
   useEffect(() => {
     const sendResponse = async () => {
-      if (state.matches({ syncing: "responding" }) && state.context.syncingPeerId) {
+      if (
+        state.matches({ syncing: "responding" }) &&
+        state.context.syncingPeerId
+      ) {
         try {
           const accounts = await getAllAccountRows(db);
           const transactions = await getAllTransactionRows(db);
           const response = createSyncResponse(accounts, transactions);
-          await sendMessage(state.context.syncingPeerId, JSON.stringify(response));
+          await sendMessage(
+            state.context.syncingPeerId,
+            JSON.stringify(response)
+          );
         } catch (error) {
           send({
             type: "SYNC_ERROR",
-            error: error instanceof Error ? error.message : "Failed to send sync response",
+            error:
+              error instanceof Error
+                ? error.message
+                : "Failed to send sync response",
           });
         }
       }
@@ -162,8 +202,8 @@ export function useSyncMachine({
     try {
       switch (message.type) {
         case "SYNC_REQUEST": {
-          // Only handle if we're in advertising state (ready to receive)
-          if (state.matches("advertising")) {
+          // Handle if we're in discovering state (ready to receive)
+          if (state.matches("discovering")) {
             send({ type: "SYNC_REQUESTED", peerId });
           }
           break;
@@ -263,14 +303,6 @@ export function useSyncMachine({
   };
 
   // Action handlers
-  const findDevices = useCallback(() => {
-    send({ type: "FIND_DEVICES" });
-  }, [send]);
-
-  const stopFindingDevices = useCallback(() => {
-    send({ type: "STOP_DISCOVERING" });
-  }, [send]);
-
   const startSync = useCallback(
     async (peer: Peer, isConnected: boolean) => {
       if (isConnected) {
@@ -301,7 +333,6 @@ export function useSyncMachine({
   }, [send]);
 
   // Derived state for easy consumption
-  const isAdvertising = state.matches("advertising");
   const isDiscovering = state.matches("discovering");
   const isSyncing = state.matches("syncing");
   const isSuccess = state.matches("success");
@@ -321,7 +352,6 @@ export function useSyncMachine({
     context: state.context,
 
     // Derived state
-    isAdvertising,
     isDiscovering,
     isSyncing,
     isSuccess,
@@ -332,8 +362,6 @@ export function useSyncMachine({
     lastError: state.context.lastError,
 
     // Actions
-    findDevices,
-    stopFindingDevices,
     startSync,
     reset,
 
