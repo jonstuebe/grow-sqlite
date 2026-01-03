@@ -81,10 +81,15 @@ export type SyncEvent =
 // Machine Definition
 // ============================================================================
 
+export interface SyncInput {
+  deviceName: string;
+}
+
 export const syncMachine = setup({
   types: {
     context: {} as SyncContext,
     events: {} as SyncEvent,
+    input: {} as SyncInput,
   },
   actions: {
     assignSyncingPeer: assign({
@@ -138,7 +143,7 @@ export const syncMachine = setup({
 }).createMachine({
   id: "sync",
   initial: "advertising",
-  context: ({ input }: { input: { deviceName: string } }) => ({
+  context: ({ input }) => ({
     deviceName: input.deviceName,
     syncingPeerId: null,
     pendingSyncPeerId: null,
