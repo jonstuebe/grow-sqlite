@@ -10,11 +10,11 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * Calculate progress percentage (clamped 0-100)
+ * Calculate progress percentage
  */
 export function getProgress(current: number, target: number): number {
   if (target <= 0) return 0;
-  return Math.min(Math.max((current / target) * 100, 0), 100);
+  return Math.max((current / target) * 100, 0);
 }
 
 /**

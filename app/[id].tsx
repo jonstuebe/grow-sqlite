@@ -51,16 +51,19 @@ export default function AccountDetailScreen() {
       goalEnabled !== account.goal_enabled ||
       targetAmount !== account.target_amount.toString());
 
+  const parsedTargetAmount = parseFloat(targetAmount) || 0;
+  const isValid = !goalEnabled || parsedTargetAmount > 0;
+
   const { navigateAway } = useUnsavedChangesWarning(hasChanges ?? false);
 
   const handleSave = async () => {
-    if (!account || !hasChanges) return;
+    if (!account || !hasChanges || !isValid) return;
 
     await updateAccount.mutateAsync({
       id: account.id,
       name: name.trim(),
       goal_enabled: goalEnabled,
-      target_amount: parseFloat(targetAmount) || 0,
+      target_amount: parsedTargetAmount,
     });
     navigateAway();
   };
@@ -116,7 +119,7 @@ export default function AccountDetailScreen() {
           Account Details
         </Stack.Header.Title>
         <Stack.Header.Right>
-          {hasChanges && (
+          {hasChanges && isValid && (
             <Stack.Header.Button
               icon="checkmark"
               variant="done"

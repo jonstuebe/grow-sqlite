@@ -37,7 +37,7 @@ function AccountRow({ account }: { account: Account }) {
               position: "absolute",
               top: 0,
               left: 0,
-              width: `${progress}%`,
+              width: `${Math.min(progress, 100)}%`,
               height: "100%",
               backgroundColor: colors.fillQuaternary,
             }}
@@ -54,13 +54,15 @@ function AccountRow({ account }: { account: Account }) {
             <View>
               <Text variant="rowLabelTitle">{account.name}</Text>
               <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
-                {formatCurrency(account.current_amount)} of{" "}
-                {formatCurrency(account.target_amount)}
+                {formatCurrency(account.current_amount)}
+                {account.goal_enabled && ` of ${formatCurrency(account.target_amount)}`}
               </Text>
             </View>
-            <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
-              {Math.round(progress)}%
-            </Text>
+            {account.goal_enabled && (
+              <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
+                {Math.round(progress)}%
+              </Text>
+            )}
           </View>
         </PressableGlass>
       </Link.Trigger>
