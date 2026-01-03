@@ -132,30 +132,60 @@ export default function HomeScreen() {
             >
               Create your first savings goal to begin tracking your progress.
             </Text>
-            <PressableGlass
-              onPress={() => router.push("/new")}
-              glassProps={{
-                style: {
-                  borderRadius: radius.xxl,
-                  paddingVertical: spacing.lg,
-                  paddingHorizontal: spacing.xl,
-                  marginTop: spacing.lg,
-                },
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacing.md,
+            <Link href="/new" asChild>
+              <PressableGlass
+                glassProps={{
+                  tintColor: colors.blue,
+                  style: {
+                    borderRadius: radius.xxl,
+                    paddingVertical: spacing.lg,
+                    paddingHorizontal: spacing.xl,
+                    marginTop: spacing.lg,
+                  },
                 }}
               >
-                <SymbolView name="plus" tintColor={colors.blue} size={20} />
-                <Text size="bodyEmphasized" color="blue">
-                  Create Goal
-                </Text>
-              </View>
-            </PressableGlass>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                  }}
+                >
+                  <SymbolView name="plus" tintColor={colors.white} size={20} />
+                  <Text size="bodyEmphasized" color="white">
+                    Create Goal
+                  </Text>
+                </View>
+              </PressableGlass>
+            </Link>
+            <Link href="/import" asChild>
+              <PressableGlass
+                glassProps={{
+                  style: {
+                    borderRadius: radius.xxl,
+                    paddingVertical: spacing.lg,
+                    paddingHorizontal: spacing.xl,
+                  },
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                  }}
+                >
+                  <SymbolView
+                    name="square.and.arrow.down"
+                    tintColor={colors.labelVibrantSecondary}
+                    size={20}
+                  />
+                  <Text size="bodyEmphasized" color="labelVibrantSecondary">
+                    Import Backup
+                  </Text>
+                </View>
+              </PressableGlass>
+            </Link>
           </View>
         ) : (
           <ScrollView
