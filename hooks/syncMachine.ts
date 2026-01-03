@@ -76,6 +76,7 @@ export type SyncEvent =
       error?: string;
     }
   | { type: "SYNC_ERROR"; error: string }
+  | { type: "VERSION_MISMATCH"; localVersion: string; remoteVersion: string }
   | { type: "RESET" };
 
 // ============================================================================
@@ -273,6 +274,17 @@ export const syncMachine = setup({
             {
               type: "assignError",
               params: ({ event }) => ({ error: event.error }),
+            },
+          ],
+        },
+        VERSION_MISMATCH: {
+          target: "error",
+          actions: [
+            {
+              type: "assignError",
+              params: ({ event }) => ({
+                error: `Cannot sync: incompatible versions. You're running v${event.localVersion} but the other device is running v${event.remoteVersion}. Please update both devices to the latest version.`,
+              }),
             },
           ],
         },

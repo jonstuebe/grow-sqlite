@@ -1,0 +1,53 @@
+---
+description: Sync protocol version maintenance
+globs: db/sync.ts, db/types.ts, db/migrations/**, hooks/syncMachine.ts, hooks/useSyncMachine.ts
+---
+
+# Sync Protocol Version
+
+When modifying any sync-related code, consider whether `SYNC_PROTOCOL_VERSION` in `db/sync.ts` needs to be updated.
+
+## When to Update the Version
+
+### Major Version Bump (e.g., 1.0.0 → 2.0.0)
+
+Required when making **breaking changes** that would cause sync failures between devices:
+
+- Adding new **required** fields to `AccountRow` or `Transaction` types
+- Removing or renaming existing fields
+- Changing data types (e.g., `number` to `string`)
+- Adding new database columns without defaults
+- Changing the sync message protocol structure
+- Modifying merge/conflict resolution logic in incompatible ways
+
+### Minor Version Bump (e.g., 1.0.0 → 1.1.0)
+
+Recommended for **backward-compatible additions**:
+
+- Adding new **optional** fields to sync messages
+- Adding new database columns with sensible defaults
+- Adding new message types that older versions can safely ignore
+
+### Patch Version Bump (e.g., 1.0.0 → 1.0.1)
+
+For **bug fixes** in sync logic that don't change the data format:
+
+- Fixing edge cases in merge logic
+- Performance improvements
+- Error handling improvements
+
+## Files That May Require Version Updates
+
+- `db/sync.ts` - Sync message types and merge logic
+- `db/types.ts` - Core data types (`AccountRow`, `Transaction`)
+- `db/migrations/**` - Database schema changes
+- `hooks/syncMachine.ts` - Sync state machine events
+- `hooks/useSyncMachine.ts` - Sync protocol handling
+
+## Reminder
+
+Before merging changes to these files, ask yourself:
+
+> "If a user with the old version tries to sync with a user running this new version, will it work correctly?"
+
+If the answer is **no**, bump the major version. If **yes but with new features**, consider a minor bump.

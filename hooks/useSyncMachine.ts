@@ -20,7 +20,10 @@ import {
   createSyncResponse,
   createSyncData,
   createSyncAck,
+  createSyncVersionMismatch,
   parseSyncMessage,
+  areVersionsCompatible,
+  SYNC_PROTOCOL_VERSION,
   type SyncMessage,
 } from "@/db/sync";
 import type { Peer, ReceivedMessage } from "@/context/nearby-connections";
@@ -191,6 +194,13 @@ export function useSyncMachine({
         case "SYNC_REQUEST": {
           // Handle if we're in discovering state (ready to receive)
           if (state.matches("discovering")) {
+            // Check protocol version compatibility
+            if (!areVersionsCompatible(SYNC_PROTOCOL_VERSION, message.protocolVersion)) {
+              // Send version mismatch response and don't proceed
+              const mismatchResponse = createSyncVersionMismatch(message.protocolVersion);
+              await sendMessage(peerId, JSON.stringify(mismatchResponse));
+              return;
+            }
             send({ type: "SYNC_REQUESTED", peerId });
           }
           break;
@@ -198,6 +208,16 @@ export function useSyncMachine({
 
         case "SYNC_RESPONSE": {
           if (state.matches({ syncing: "requesting" })) {
+            // Check protocol version compatibility
+            if (!areVersionsCompatible(SYNC_PROTOCOL_VERSION, message.protocolVersion)) {
+              send({
+                type: "VERSION_MISMATCH",
+                localVersion: SYNC_PROTOCOL_VERSION,
+                remoteVersion: message.protocolVersion,
+              });
+              return;
+            }
+
             // Merge their data
             await applySyncData(db, message.accounts, message.transactions);
 
@@ -264,6 +284,16 @@ export function useSyncMachine({
             accountsMerged: message.accountsMerged,
             transactionsMerged: message.transactionsMerged,
             error: message.error,
+          });
+          break;
+        }
+
+        case "SYNC_VERSION_MISMATCH": {
+          // The other device rejected our sync request due to version mismatch
+          send({
+            type: "VERSION_MISMATCH",
+            localVersion: SYNC_PROTOCOL_VERSION,
+            remoteVersion: message.localVersion, // Their local version is what we're incompatible with
           });
           break;
         }

@@ -5,6 +5,35 @@
 import type { AccountRow, Transaction } from "./types";
 
 // ============================================================================
+// Protocol Version
+// ============================================================================
+
+/**
+ * Sync protocol version - increment when:
+ * - Database schema changes
+ * - Sync message format changes
+ * - Merge logic changes
+ *
+ * Version bumping guide:
+ * - Major (1.0.0 -> 2.0.0): Breaking schema changes, incompatible message format
+ * - Minor (1.0.0 -> 1.1.0): New optional fields, backward-compatible additions
+ * - Patch (1.0.0 -> 1.0.1): Bug fixes in sync logic
+ */
+export const SYNC_PROTOCOL_VERSION = "1.0.0";
+
+/**
+ * Check if two protocol versions are compatible (same major version)
+ * @param v1 - First version string (e.g., "1.0.0")
+ * @param v2 - Second version string (e.g., "1.1.0")
+ * @returns true if major versions match
+ */
+export function areVersionsCompatible(v1: string, v2: string): boolean {
+  const major1 = v1.split(".")[0];
+  const major2 = v2.split(".")[0];
+  return major1 === major2;
+}
+
+// ============================================================================
 // Message Types
 // ============================================================================
 
@@ -12,7 +41,8 @@ export type SyncMessageType =
   | "SYNC_REQUEST"
   | "SYNC_RESPONSE"
   | "SYNC_DATA"
-  | "SYNC_ACK";
+  | "SYNC_ACK"
+  | "SYNC_VERSION_MISMATCH";
 
 /** Base interface for all sync messages */
 interface BaseSyncMessage {
@@ -26,6 +56,7 @@ interface BaseSyncMessage {
  */
 export interface SyncRequest extends BaseSyncMessage {
   type: "SYNC_REQUEST";
+  protocolVersion: string;
   lastSyncTime: number;
 }
 
@@ -35,8 +66,19 @@ export interface SyncRequest extends BaseSyncMessage {
  */
 export interface SyncResponse extends BaseSyncMessage {
   type: "SYNC_RESPONSE";
+  protocolVersion: string;
   accounts: AccountRow[];
   transactions: Transaction[];
+}
+
+/**
+ * Sent when protocol versions are incompatible
+ * Receiving device should show an error and abort sync
+ */
+export interface SyncVersionMismatch extends BaseSyncMessage {
+  type: "SYNC_VERSION_MISMATCH";
+  localVersion: string;
+  remoteVersion: string;
 }
 
 /**
@@ -60,7 +102,12 @@ export interface SyncAck extends BaseSyncMessage {
   transactionsMerged: number;
 }
 
-export type SyncMessage = SyncRequest | SyncResponse | SyncData | SyncAck;
+export type SyncMessage =
+  | SyncRequest
+  | SyncResponse
+  | SyncData
+  | SyncAck
+  | SyncVersionMismatch;
 
 // ============================================================================
 // Message Helpers
@@ -73,6 +120,7 @@ export function createSyncRequest(lastSyncTime: number = 0): SyncRequest {
   return {
     type: "SYNC_REQUEST",
     timestamp: Date.now(),
+    protocolVersion: SYNC_PROTOCOL_VERSION,
     lastSyncTime,
   };
 }
@@ -87,8 +135,23 @@ export function createSyncResponse(
   return {
     type: "SYNC_RESPONSE",
     timestamp: Date.now(),
+    protocolVersion: SYNC_PROTOCOL_VERSION,
     accounts,
     transactions,
+  };
+}
+
+/**
+ * Create a version mismatch message
+ */
+export function createSyncVersionMismatch(
+  remoteVersion: string
+): SyncVersionMismatch {
+  return {
+    type: "SYNC_VERSION_MISMATCH",
+    timestamp: Date.now(),
+    localVersion: SYNC_PROTOCOL_VERSION,
+    remoteVersion,
   };
 }
 
@@ -136,9 +199,13 @@ export function parseSyncMessage(json: string): SyncMessage | null {
       data &&
       typeof data === "object" &&
       "type" in data &&
-      ["SYNC_REQUEST", "SYNC_RESPONSE", "SYNC_DATA", "SYNC_ACK"].includes(
-        data.type
-      )
+      [
+        "SYNC_REQUEST",
+        "SYNC_RESPONSE",
+        "SYNC_DATA",
+        "SYNC_ACK",
+        "SYNC_VERSION_MISMATCH",
+      ].includes(data.type)
     ) {
       return data as SyncMessage;
     }
