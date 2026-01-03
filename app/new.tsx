@@ -98,61 +98,52 @@ export default function NewAccountScreen() {
         </View>
 
         <View style={{ gap: spacing.md }}>
-          <FormField label="Name">
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Account name"
-              placeholderTextColor={colors.labelTertiary}
-              autoFocus
-              style={{
-                flex: 1,
-                textAlign: "right",
-                color: colors.labelPrimary,
-                fontSize: typography.rowLabelTitle.fontSize,
-                fontFamily: typography.rowLabelTitle.fontFamily,
-              }}
-            />
-          </FormField>
+          <FormField.Root>
+            <FormField.Label>Name</FormField.Label>
+            <FormField.InputGroup>
+              <FormField.TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="Account name"
+                autoFocus
+              />
+            </FormField.InputGroup>
+          </FormField.Root>
 
-          <FormField label="Initial Balance">
-            <TextInput
-              value={initialBalance}
-              onChangeText={setInitialBalance}
-              placeholder="$0"
-              placeholderTextColor={colors.labelTertiary}
-              keyboardType="decimal-pad"
-              style={{
-                flex: 1,
-                textAlign: "right",
-                color: colors.labelPrimary,
-                fontSize: typography.rowLabelTitle.fontSize,
-                fontFamily: typography.rowLabelTitle.fontFamily,
-              }}
-            />
-          </FormField>
+          <FormField.Root>
+            <FormField.Label>Initial Balance</FormField.Label>
+            <FormField.InputGroup>
+              <FormField.TextInput
+                value={initialBalance}
+                onChangeText={setInitialBalance}
+                placeholder="$0"
+                keyboardType="decimal-pad"
+              />
+            </FormField.InputGroup>
+          </FormField.Root>
 
-          <FormField label="Savings Goal">
-            <Switch value={goalEnabled} onValueChange={setGoalEnabled} />
-          </FormField>
+          <FormField.Root>
+            <FormField.Label>Savings Goal</FormField.Label>
+            <FormField.InputGroup>
+              <FormField.Switch
+                value={goalEnabled}
+                onValueChange={setGoalEnabled}
+              />
+            </FormField.InputGroup>
+          </FormField.Root>
 
           {goalEnabled && (
-            <FormField label="Target Amount">
-              <TextInput
-                value={targetAmount}
-                onChangeText={setTargetAmount}
-                placeholder="$0"
-                placeholderTextColor={colors.labelTertiary}
-                keyboardType="decimal-pad"
-                style={{
-                  flex: 1,
-                  textAlign: "right",
-                  color: colors.labelPrimary,
-                  fontSize: typography.rowLabelTitle.fontSize,
-                  fontFamily: typography.rowLabelTitle.fontFamily,
-                }}
-              />
-            </FormField>
+            <FormField.Root>
+              <FormField.Label>Target Amount</FormField.Label>
+              <FormField.InputGroup>
+                <FormField.TextInput
+                  value={targetAmount}
+                  onChangeText={setTargetAmount}
+                  placeholder="$0"
+                  keyboardType="decimal-pad"
+                />
+              </FormField.InputGroup>
+            </FormField.Root>
           )}
         </View>
       </View>

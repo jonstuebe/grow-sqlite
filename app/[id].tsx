@@ -1,13 +1,13 @@
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useEffect } from "react";
-import { Alert, TextInput, View, ScrollView, Switch } from "react-native";
+import { Alert, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FormField } from "@/components/form-field";
 import { PressableGlass } from "@/components/pressable-glass";
 import { Text } from "@/components/text";
-import { useAccount, useUpdateAccount, useArchiveAccount } from "@/db/hooks";
+import { useAccount, useArchiveAccount, useUpdateAccount } from "@/db/hooks";
 import { useAccountDetailReducer } from "@/hooks/useAccountDetailReducer";
 import { useTheme } from "@/hooks/useTheme";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
@@ -154,42 +154,37 @@ export default function AccountDetailScreen() {
           </View>
 
           <View style={{ gap: spacing.md }}>
-            <FormField label="Name">
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="Account name"
-                placeholderTextColor={colors.labelTertiary}
-                style={{
-                  flex: 1,
-                  textAlign: "right",
-                  color: colors.labelPrimary,
-                  fontSize: typography.rowLabelTitle.fontSize,
-                  fontFamily: typography.rowLabelTitle.fontFamily,
-                }}
-              />
-            </FormField>
-            <FormField label="Savings Goal">
-              <Switch value={goalEnabled} onValueChange={setGoalEnabled} />
-            </FormField>
-            {goalEnabled && (
-              <FormField label="Target Amount">
-                <TextInput
-                  value={targetAmount}
-                  onChangeText={setTargetAmount}
-                  placeholder="$0"
-                  placeholderTextColor={colors.labelTertiary}
-                  keyboardType="decimal-pad"
-                  style={{
-                    flex: 1,
-                    textAlign: "right",
-                    color: colors.labelPrimary,
-                    fontSize: typography.rowLabelTitle.fontSize,
-                    fontFamily: typography.rowLabelTitle.fontFamily,
-                  }}
+            <FormField.Root>
+              <FormField.Label>Name</FormField.Label>
+              <FormField.InputGroup>
+                <FormField.TextInput
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Account name"
                 />
-              </FormField>
-            )}
+              </FormField.InputGroup>
+            </FormField.Root>
+            <FormField.Root>
+              <FormField.Label>Savings Goal</FormField.Label>
+              <FormField.Switch
+                value={goalEnabled}
+                onValueChange={setGoalEnabled}
+              />
+            </FormField.Root>
+            {goalEnabled ? (
+              <FormField.Root>
+                <FormField.Label>Target Amount</FormField.Label>
+                <FormField.InputGroup>
+                  <FormField.InputAddon>$</FormField.InputAddon>
+                  <FormField.TextInput
+                    value={targetAmount}
+                    onChangeText={setTargetAmount}
+                    placeholder="0"
+                    keyboardType="decimal-pad"
+                  />
+                </FormField.InputGroup>
+              </FormField.Root>
+            ) : null}
           </View>
         </View>
 

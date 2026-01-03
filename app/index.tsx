@@ -82,6 +82,7 @@ export default function HomeScreen() {
   return (
     <>
       <Stack.Header
+        hidden={isLoading || accounts.length === 0}
         style={{
           backgroundColor: colors.backgroundPrimary,
         }}
@@ -190,6 +191,7 @@ export default function HomeScreen() {
         ) : (
           <ScrollView
             contentContainerStyle={{
+              flex: 1,
               paddingTop: spacing.lg,
               paddingHorizontal: spacing.lg,
               paddingBottom: spacing.lg,
