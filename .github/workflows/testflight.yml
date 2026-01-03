@@ -1,0 +1,43 @@
+name: TestFlight Build
+
+on:
+  schedule:
+    # Run at noon UTC on the 1st of every other month (~60 days)
+    - cron: "0 12 1 */2 *"
+  workflow_dispatch:
+    # Allow manual triggers from GitHub Actions UI
+
+jobs:
+  build-and-submit:
+    name: Build & Submit to TestFlight
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS app
+        run: eas build --platform ios --profile production --non-interactive
+
+      - name: Submit to TestFlight
+        run: eas submit --platform ios --profile production --non-interactive --latest
+
