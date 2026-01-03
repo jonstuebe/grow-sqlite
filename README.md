@@ -52,9 +52,6 @@ bun start
 
 # Run on iOS simulator
 bun ios
-
-# Run on Android emulator
-bun android
 ```
 
 ### Testing
