@@ -1,11 +1,11 @@
-import { SymbolView } from "expo-symbols";
+import { SymbolView, type SFSymbol } from "expo-symbols";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import { PressableGlass } from "@/components/pressable-glass";
 import { useTheme } from "@/hooks/useTheme";
 
 export interface IconButtonProps {
-  icon: string;
+  icon: SFSymbol;
   onPress?: () => void;
   variant?: "default" | "primary";
   style?: StyleProp<ViewStyle>;
@@ -41,4 +41,3 @@ export function IconButton({
     </PressableGlass>
   );
 }
-
