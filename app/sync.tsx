@@ -21,7 +21,7 @@ interface DeviceItem extends Peer {
 }
 
 export default function SyncScreen() {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, typography } = useTheme();
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const nearbyConnections = useNearbyConnections();
@@ -144,31 +144,35 @@ export default function SyncScreen() {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: 12,
+            padding: spacing.lg,
             backgroundColor: colors.backgroundTertiary,
             borderRadius: radius.md,
           }}
         >
-          <View style={{ flex: 1, gap: 2 }}>
+          <View style={{ flex: 1, gap: spacing.xxs }}>
             <Text
               style={{
-                fontSize: 16,
-                fontWeight: "500",
+                ...typography.calloutEmphasized,
                 color: colors.labelPrimary,
               }}
             >
               {item.name}
             </Text>
-            <Text style={{ color: colors.labelTertiary, fontSize: 12 }}>
+            <Text
+              style={{
+                ...typography.caption1Regular,
+                color: colors.labelTertiary,
+              }}
+            >
               {item.isConnected ? "Connected" : "Nearby"}
             </Text>
           </View>
 
           <TouchableOpacity
             style={{
-              paddingHorizontal: 20,
-              paddingVertical: 8,
-              borderRadius: 8,
+              paddingHorizontal: spacing.xl,
+              paddingVertical: spacing.md,
+              borderRadius: radius.lg,
               minWidth: 80,
               alignItems: "center",
               backgroundColor: colors.blue,
@@ -177,9 +181,14 @@ export default function SyncScreen() {
             disabled={isSyncingThisPeer}
           >
             {isSyncingThisPeer ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={colors.white} />
             ) : (
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
+              <Text
+                style={{
+                  ...typography.subheadlineEmphasized,
+                  color: colors.white,
+                }}
+              >
                 Sync
               </Text>
             )}
@@ -187,7 +196,7 @@ export default function SyncScreen() {
         </View>
       );
     },
-    [colors, radius, syncStatus, syncingPeerId, handleSync]
+    [colors, radius, spacing, typography, syncStatus, syncingPeerId, handleSync]
   );
 
   return (
@@ -201,16 +210,15 @@ export default function SyncScreen() {
         {/* Device Info */}
         <View
           style={{
-            padding: 16,
-            gap: 4,
+            padding: spacing.xl,
+            gap: spacing.xs,
             backgroundColor: colors.backgroundTertiary,
             borderRadius: radius.lg,
           }}
         >
           <Text
             style={{
-              fontSize: 12,
-              fontWeight: "600",
+              ...typography.caption1Emphasized,
               textTransform: "uppercase",
               color: colors.labelSecondary,
             }}
@@ -219,14 +227,18 @@ export default function SyncScreen() {
           </Text>
           <Text
             style={{
-              fontSize: 20,
-              fontWeight: "600",
+              ...typography.title3Emphasized,
               color: colors.labelPrimary,
             }}
           >
             {deviceName}
           </Text>
-          <Text style={{ color: colors.labelTertiary, fontSize: 12 }}>
+          <Text
+            style={{
+              ...typography.caption1Regular,
+              color: colors.labelTertiary,
+            }}
+          >
             {isDiscovering
               ? "Searching for devices..."
               : "Ready to receive sync requests"}
@@ -237,8 +249,7 @@ export default function SyncScreen() {
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              fontSize: 12,
-              fontWeight: "600",
+              ...typography.caption1Emphasized,
               textTransform: "uppercase",
               color: colors.labelSecondary,
               marginBottom: spacing.sm,
@@ -254,12 +265,16 @@ export default function SyncScreen() {
                 flex: 1,
                 justifyContent: "center",
                 alignItems: "center",
-                paddingHorizontal: 32,
-                gap: 16,
+                paddingHorizontal: spacing.xxl,
+                gap: spacing.xl,
               }}
             >
               <Text
-                style={{ color: colors.labelTertiary, textAlign: "center" }}
+                style={{
+                  ...typography.bodyRegular,
+                  color: colors.labelTertiary,
+                  textAlign: "center",
+                }}
               >
                 Ready to receive sync requests.{"\n"}
                 Or tap below to find other devices.
@@ -267,14 +282,17 @@ export default function SyncScreen() {
               <TouchableOpacity
                 style={{
                   backgroundColor: colors.blue,
-                  paddingHorizontal: 24,
-                  paddingVertical: 12,
-                  borderRadius: 8,
+                  paddingHorizontal: spacing.xl,
+                  paddingVertical: spacing.lg,
+                  borderRadius: radius.lg,
                 }}
                 onPress={findDevices}
               >
                 <Text
-                  style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}
+                  style={{
+                    ...typography.calloutEmphasized,
+                    color: colors.white,
+                  }}
                 >
                   Find Devices
                 </Text>
@@ -287,15 +305,16 @@ export default function SyncScreen() {
                 flex: 1,
                 justifyContent: "center",
                 alignItems: "center",
-                paddingHorizontal: 32,
+                paddingHorizontal: spacing.xxl,
               }}
             >
               <ActivityIndicator size="large" color={colors.blue} />
               <Text
                 style={{
+                  ...typography.bodyRegular,
                   color: colors.labelTertiary,
                   textAlign: "center",
-                  marginTop: 16,
+                  marginTop: spacing.xl,
                 }}
               >
                 Searching for nearby devices...{"\n"}
@@ -318,18 +337,18 @@ export default function SyncScreen() {
         {syncStatus !== "idle" && (
           <View
             style={{
-              padding: 12,
+              padding: spacing.lg,
               alignItems: "center",
               backgroundColor:
                 syncStatus === "success"
-                  ? "#34C759"
+                  ? colors.green
                   : syncStatus === "error"
-                  ? "#FF3B30"
+                  ? colors.red
                   : colors.blue,
               borderRadius: radius.md,
             }}
           >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>
+            <Text style={{ ...typography.bodyEmphasized, color: colors.white }}>
               {syncStatus === "syncing" && "Syncing..."}
               {syncStatus === "success" && "Sync complete!"}
               {syncStatus === "error" && "Sync failed"}
