@@ -35,7 +35,6 @@ export default function DepositScreen() {
         account_id: account.id,
         amount: numAmount,
         type: "deposit",
-        description: "Deposit",
       });
       router.back();
     } catch (error) {

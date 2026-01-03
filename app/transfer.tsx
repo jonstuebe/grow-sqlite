@@ -51,7 +51,6 @@ export default function TransferScreen() {
         amount: numAmount,
         type: "transfer",
         related_account_id: toAccount.id,
-        description: `Transfer to ${toAccount.name}`,
       });
       router.back();
     } catch (error) {

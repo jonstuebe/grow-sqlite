@@ -17,6 +17,7 @@ import { centsToDollars, dollarsToCents } from "@/utils/currency";
 
 /**
  * Get all accounts with their computed current_amount from transactions
+ * Excludes archived accounts
  * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getAccounts(db: SQLiteDatabase): Promise<Account[]> {
@@ -37,11 +38,13 @@ export async function getAccounts(db: SQLiteDatabase): Promise<Account[]> {
         0
       ) as current_amount
     FROM accounts a
+    WHERE a.archived_at IS NULL
     ORDER BY a.created_at DESC
   `);
 
   return rows.map((row) => ({
     ...row,
+    goal_enabled: Boolean(row.goal_enabled),
     target_amount: centsToDollars(row.target_amount),
     current_amount: centsToDollars(row.current_amount),
   }));
@@ -82,13 +85,14 @@ export async function getAccount(
 
   return {
     ...row,
+    goal_enabled: Boolean(row.goal_enabled),
     target_amount: centsToDollars(row.target_amount),
     current_amount: centsToDollars(row.current_amount),
   };
 }
 
 /**
- * Get total balance across all accounts
+ * Get total balance across all non-archived accounts
  * Note: Converts cents from DB to dollars for app consumption
  */
 export async function getTotalBalance(db: SQLiteDatabase): Promise<number> {
@@ -101,6 +105,7 @@ export async function getTotalBalance(db: SQLiteDatabase): Promise<number> {
       END
     ), 0) as total
     FROM transactions
+    WHERE account_id IN (SELECT id FROM accounts WHERE archived_at IS NULL)
   `);
 
   return centsToDollars(result?.total ?? 0);
@@ -118,9 +123,9 @@ export async function createAccount(
   const now = Date.now();
 
   await db.runAsync(
-    `INSERT INTO accounts (id, name, target_amount, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?)`,
-    [id, input.name, dollarsToCents(input.target_amount), now, now]
+    `INSERT INTO accounts (id, name, target_amount, goal_enabled, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [id, input.name, dollarsToCents(input.target_amount), 1, now, now]
   );
 
   // Return the newly created account
@@ -155,6 +160,11 @@ export async function updateAccount(
     values.push(dollarsToCents(input.target_amount));
   }
 
+  if (input.goal_enabled !== undefined) {
+    updates.push("goal_enabled = ?");
+    values.push(input.goal_enabled ? 1 : 0);
+  }
+
   values.push(id);
 
   await db.runAsync(
@@ -168,6 +178,20 @@ export async function updateAccount(
   }
 
   return account;
+}
+
+/**
+ * Archive an account (soft delete)
+ */
+export async function archiveAccount(
+  db: SQLiteDatabase,
+  id: string
+): Promise<void> {
+  const now = Date.now();
+  await db.runAsync(
+    "UPDATE accounts SET archived_at = ?, updated_at = ? WHERE id = ?",
+    [now, now, id]
+  );
 }
 
 /**
@@ -251,14 +275,13 @@ export async function createTransaction(
   }
 
   await db.runAsync(
-    `INSERT INTO transactions (id, account_id, amount, type, description, related_account_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO transactions (id, account_id, amount, type, related_account_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.account_id,
       dollarsToCents(input.amount),
       input.type,
-      input.description ?? null,
       input.related_account_id ?? null,
       now,
       now,

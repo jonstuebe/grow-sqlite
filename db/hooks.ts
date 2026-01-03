@@ -8,6 +8,7 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  archiveAccount,
   getTransactions,
   getTransaction,
   createTransaction,
@@ -124,6 +125,22 @@ export function useDeleteAccount() {
   });
 }
 
+/**
+ * Archive an account (soft delete)
+ */
+export function useArchiveAccount() {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => archiveAccount(db, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.totalBalance });
+    },
+  });
+}
+
 // ============================================================================
 // Transaction Hooks
 // ============================================================================
@@ -221,4 +238,3 @@ export function useDeleteTransaction() {
     },
   });
 }
-

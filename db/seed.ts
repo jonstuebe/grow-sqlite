@@ -77,56 +77,48 @@ export async function runSeed(db: SQLiteDatabase): Promise<void> {
       account_id: accountIds.house,
       amount: dollarsToCents(10000), // $10,000
       type: "deposit",
-      description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.house,
       amount: dollarsToCents(2500), // $2,500
       type: "deposit",
-      description: "Monthly savings",
     },
     {
       id: uuid(),
       account_id: accountIds.vacation,
       amount: dollarsToCents(2000), // $2,000
       type: "deposit",
-      description: "Tax refund",
     },
     {
       id: uuid(),
       account_id: accountIds.vacation,
       amount: dollarsToCents(200), // $200
       type: "deposit",
-      description: "Weekly savings",
     },
     {
       id: uuid(),
       account_id: accountIds.emergency,
       amount: dollarsToCents(8000), // $8,000
       type: "deposit",
-      description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.emergency,
       amount: dollarsToCents(500), // $500
       type: "withdrawal",
-      description: "Car repair",
     },
     {
       id: uuid(),
       account_id: accountIds.car,
       amount: dollarsToCents(5000), // $5,000
       type: "deposit",
-      description: "Initial deposit",
     },
     {
       id: uuid(),
       account_id: accountIds.car,
       amount: dollarsToCents(3000), // $3,000
       type: "deposit",
-      description: "Bonus",
     },
     // Transfers
     {
@@ -135,7 +127,6 @@ export async function runSeed(db: SQLiteDatabase): Promise<void> {
       related_account_id: accountIds.vacation,
       amount: dollarsToCents(500), // $500
       type: "transfer",
-      description: "Vacation fund boost",
     },
     {
       id: uuid(),
@@ -143,21 +134,19 @@ export async function runSeed(db: SQLiteDatabase): Promise<void> {
       related_account_id: accountIds.house,
       amount: dollarsToCents(1000), // $1,000
       type: "transfer",
-      description: "Reallocation to house fund",
     },
   ];
 
   // Insert transactions
   for (const txn of transactions) {
     await db.runAsync(
-      `INSERT INTO transactions (id, account_id, amount, type, description, related_account_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO transactions (id, account_id, amount, type, related_account_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         txn.id,
         txn.account_id,
         txn.amount,
         txn.type,
-        txn.description,
         "related_account_id" in txn ? txn.related_account_id ?? null : null,
         now,
         now,

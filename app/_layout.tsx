@@ -73,6 +73,12 @@ export default function RootLayout() {
                 presentation: "modal",
               }}
             />
+            <Stack.Screen
+              name="transactions"
+              options={{
+                presentation: "modal",
+              }}
+            />
           </Stack>
           <StatusBar style="auto" />
         </KeyboardProvider>

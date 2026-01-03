@@ -36,7 +36,6 @@ export default function WithdrawalScreen() {
         account_id: account.id,
         amount: numAmount,
         type: "withdrawal",
-        description: "Withdrawal",
       });
       router.back();
     } catch (error) {

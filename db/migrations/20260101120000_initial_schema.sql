@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS accounts (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   target_amount INTEGER NOT NULL,
+  goal_enabled INTEGER NOT NULL DEFAULT 1,
+  archived_at INTEGER DEFAULT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -21,7 +23,6 @@ CREATE TABLE IF NOT EXISTS transactions (
   account_id TEXT NOT NULL,
   amount INTEGER NOT NULL,
   type TEXT NOT NULL CHECK(type IN ('deposit', 'withdrawal', 'transfer')),
-  description TEXT,
   related_account_id TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,

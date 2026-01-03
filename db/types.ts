@@ -6,6 +6,8 @@ export interface Account {
   id: string;
   name: string;
   target_amount: number;
+  goal_enabled: boolean;
+  archived_at: number | null;
   current_amount: number; // computed from SUM of transactions
   created_at: number;
   updated_at: number;
@@ -16,6 +18,8 @@ export interface AccountRow {
   id: string;
   name: string;
   target_amount: number;
+  goal_enabled: number; // SQLite stores as INTEGER (0 or 1)
+  archived_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -27,7 +31,6 @@ export interface Transaction {
   account_id: string;
   amount: number;
   type: TransactionType;
-  description: string | null;
   related_account_id: string | null;
   created_at: number;
   updated_at: number;
@@ -43,6 +46,7 @@ export interface CreateAccountInput {
 export interface UpdateAccountInput {
   name?: string;
   target_amount?: number;
+  goal_enabled?: boolean;
 }
 
 /** Input for creating a new transaction */
@@ -50,6 +54,5 @@ export interface CreateTransactionInput {
   account_id: string;
   amount: number;
   type: TransactionType;
-  description?: string;
   related_account_id?: string; // required for transfers
 }
