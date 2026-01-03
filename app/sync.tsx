@@ -232,7 +232,7 @@ export default function SyncScreen() {
         </View>
 
         {/* Nearby Devices */}
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, overflow: "hidden" }}>
           <Text
             variant="caption1Emphasized"
             color="labelSecondary"
