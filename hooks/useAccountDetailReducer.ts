@@ -4,18 +4,21 @@ export interface AccountDetailState {
   name: string;
   goalEnabled: boolean;
   targetAmount: string;
+  initialBalance: string;
 }
 
 export type AccountDetailAction =
   | { type: "SET_NAME"; payload: string }
   | { type: "SET_GOAL_ENABLED"; payload: boolean }
   | { type: "SET_TARGET_AMOUNT"; payload: string }
+  | { type: "SET_INITIAL_BALANCE"; payload: string }
   | { type: "INITIALIZE"; payload: AccountDetailState };
 
 export const initialAccountDetailState: AccountDetailState = {
   name: "",
   goalEnabled: true,
   targetAmount: "",
+  initialBalance: "",
 };
 
 export function accountDetailReducer(
@@ -31,6 +34,9 @@ export function accountDetailReducer(
 
     case "SET_TARGET_AMOUNT":
       return { ...state, targetAmount: action.payload };
+
+    case "SET_INITIAL_BALANCE":
+      return { ...state, initialBalance: action.payload };
 
     case "INITIALIZE":
       return { ...action.payload };
@@ -57,6 +63,10 @@ export function useAccountDetailReducer(
     dispatch({ type: "SET_TARGET_AMOUNT", payload: amount });
   }, []);
 
+  const setInitialBalance = useCallback((amount: string) => {
+    dispatch({ type: "SET_INITIAL_BALANCE", payload: amount });
+  }, []);
+
   const initialize = useCallback((data: AccountDetailState) => {
     dispatch({ type: "INITIALIZE", payload: data });
   }, []);
@@ -67,6 +77,7 @@ export function useAccountDetailReducer(
     setName,
     setGoalEnabled,
     setTargetAmount,
+    setInitialBalance,
     initialize,
   };
 }

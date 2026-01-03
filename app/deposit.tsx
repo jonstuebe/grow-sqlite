@@ -8,6 +8,7 @@ import { Text } from "@/components/text";
 import { useAccount, useCreateTransaction } from "@/db/hooks";
 import { useTheme } from "@/hooks/useTheme";
 import { useDepositReducer } from "@/hooks/useDepositReducer";
+import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { formatCurrency } from "@/utils/format";
 
 export default function DepositScreen() {
@@ -21,6 +22,8 @@ export default function DepositScreen() {
 
   const { state, handleKeyPress } = useDepositReducer();
   const { amount } = state;
+
+  const { navigateAway } = useUnsavedChangesWarning(amount !== "");
 
   const numAmount = parseFloat(amount) || 0;
   const currentBalance = account?.current_amount ?? 0;
@@ -36,7 +39,7 @@ export default function DepositScreen() {
         amount: numAmount,
         type: "deposit",
       });
-      router.back();
+      navigateAway();
     } catch (error) {
       console.error("Deposit failed:", error);
     }

@@ -13,6 +13,7 @@ import { useAccounts, useCreateTransaction } from "@/db/hooks";
 import { useTheme } from "@/hooks/useTheme";
 import { useTransferReducer } from "@/hooks/useTransferReducer";
 import { useTransferValidation } from "@/hooks/useTransferValidation";
+import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { formatCurrency } from "@/utils/format";
 
 export default function TransferScreen() {
@@ -27,6 +28,11 @@ export default function TransferScreen() {
     useTransferReducer();
 
   const { fromIndex, toIndex, amount } = state;
+
+  // Consider the form dirty if any field has been modified from its initial state
+  const hasUnsavedChanges =
+    amount !== "" || fromIndex !== null || toIndex !== null;
+  const { navigateAway } = useUnsavedChangesWarning(hasUnsavedChanges);
 
   const fromAccount = fromIndex !== null ? accounts[fromIndex] ?? null : null;
   const toAccount = toIndex !== null ? accounts[toIndex] ?? null : null;
@@ -52,7 +58,7 @@ export default function TransferScreen() {
         type: "transfer",
         related_account_id: toAccount.id,
       });
-      router.back();
+      navigateAway();
     } catch (error) {
       console.error("Transfer failed:", error);
     }

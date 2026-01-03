@@ -7,6 +7,7 @@ import { NumericKeypad } from "@/components/numeric-keypad";
 import { Text } from "@/components/text";
 import { useAccount, useCreateTransaction } from "@/db/hooks";
 import { useTheme } from "@/hooks/useTheme";
+import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { useWithdrawalReducer } from "@/hooks/useWithdrawalReducer";
 import { formatCurrency } from "@/utils/format";
 
@@ -21,6 +22,8 @@ export default function WithdrawalScreen() {
 
   const { state, handleKeyPress } = useWithdrawalReducer();
   const { amount } = state;
+
+  const { navigateAway } = useUnsavedChangesWarning(amount !== "");
 
   const numAmount = parseFloat(amount) || 0;
   const currentBalance = account?.current_amount ?? 0;
@@ -37,7 +40,7 @@ export default function WithdrawalScreen() {
         amount: numAmount,
         type: "withdrawal",
       });
-      router.back();
+      navigateAway();
     } catch (error) {
       console.error("Withdrawal failed:", error);
     }

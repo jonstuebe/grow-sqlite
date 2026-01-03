@@ -6,6 +6,7 @@ import {
   getAccount,
   getTotalBalance,
   createAccount,
+  createAccountWithInitialBalance,
   updateAccount,
   deleteAccount,
   archiveAccount,
@@ -13,6 +14,7 @@ import {
   getTransaction,
   createTransaction,
   deleteTransaction,
+  type CreateAccountWithInitialBalanceInput,
 } from "./queries";
 import type {
   Account,
@@ -87,6 +89,25 @@ export function useCreateAccount() {
     mutationFn: (input: CreateAccountInput) => createAccount(db, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    },
+  });
+}
+
+/**
+ * Create a new account with an optional initial balance
+ * Uses a SQL transaction to atomically create both the account and deposit
+ */
+export function useCreateAccountWithInitialBalance() {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateAccountWithInitialBalanceInput) =>
+      createAccountWithInitialBalance(db, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.totalBalance });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 }

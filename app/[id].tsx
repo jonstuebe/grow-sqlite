@@ -10,6 +10,7 @@ import { Text } from "@/components/text";
 import { useAccount, useUpdateAccount, useArchiveAccount } from "@/db/hooks";
 import { useAccountDetailReducer } from "@/hooks/useAccountDetailReducer";
 import { useTheme } from "@/hooks/useTheme";
+import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { formatCurrency, getProgress } from "@/utils/format";
 
 export default function AccountDetailScreen() {
@@ -48,6 +49,8 @@ export default function AccountDetailScreen() {
       goalEnabled !== account.goal_enabled ||
       targetAmount !== account.target_amount.toString());
 
+  const { navigateAway } = useUnsavedChangesWarning(hasChanges ?? false);
+
   const handleSave = async () => {
     if (!account || !hasChanges) return;
 
@@ -57,7 +60,7 @@ export default function AccountDetailScreen() {
       goal_enabled: goalEnabled,
       target_amount: parseFloat(targetAmount) || 0,
     });
-    router.back();
+    navigateAway();
   };
 
   const handleArchive = () => {

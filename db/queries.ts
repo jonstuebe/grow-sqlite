@@ -137,6 +137,66 @@ export async function createAccount(
   return account;
 }
 
+/** Input for creating an account with an initial balance */
+export interface CreateAccountWithInitialBalanceInput extends CreateAccountInput {
+  initialBalance?: number;
+  goalEnabled?: boolean;
+}
+
+/**
+ * Create a new account with an optional initial balance using a SQL transaction
+ * Note: Converts dollars from app to cents for DB storage
+ */
+export async function createAccountWithInitialBalance(
+  db: SQLiteDatabase,
+  input: CreateAccountWithInitialBalanceInput
+): Promise<Account> {
+  const accountId = uuid();
+  const now = Date.now();
+
+  await db.withTransactionAsync(async () => {
+    // Insert the account
+    await db.runAsync(
+      `INSERT INTO accounts (id, name, target_amount, goal_enabled, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        accountId,
+        input.name,
+        dollarsToCents(input.target_amount),
+        input.goalEnabled ? 1 : 0,
+        now,
+        now,
+      ]
+    );
+
+    // If there's an initial balance, create a deposit transaction
+    if (input.initialBalance && input.initialBalance > 0) {
+      const transactionId = uuid();
+      await db.runAsync(
+        `INSERT INTO transactions (id, account_id, amount, type, related_account_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          transactionId,
+          accountId,
+          dollarsToCents(input.initialBalance),
+          "deposit",
+          null,
+          now,
+          now,
+        ]
+      );
+    }
+  });
+
+  // Return the newly created account
+  const account = await getAccount(db, accountId);
+  if (!account) {
+    throw new Error("Failed to create account");
+  }
+
+  return account;
+}
+
 /**
  * Update an existing account
  * Note: Converts dollars from app to cents for DB storage

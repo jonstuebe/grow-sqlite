@@ -19,6 +19,10 @@ describe("accountDetailReducer", () => {
     it("should have empty targetAmount", () => {
       expect(initialAccountDetailState.targetAmount).toBe("");
     });
+
+    it("should have empty initialBalance", () => {
+      expect(initialAccountDetailState.initialBalance).toBe("");
+    });
   });
 
   describe("SET_NAME", () => {
@@ -54,6 +58,7 @@ describe("accountDetailReducer", () => {
         name: "Test",
         goalEnabled: false,
         targetAmount: "1000",
+        initialBalance: "500",
       };
       const action: AccountDetailAction = {
         type: "SET_NAME",
@@ -65,6 +70,7 @@ describe("accountDetailReducer", () => {
       expect(result.name).toBe("Updated");
       expect(result.goalEnabled).toBe(false);
       expect(result.targetAmount).toBe("1000");
+      expect(result.initialBalance).toBe("500");
     });
 
     it("should handle empty string", () => {
@@ -116,6 +122,7 @@ describe("accountDetailReducer", () => {
         name: "Savings",
         goalEnabled: true,
         targetAmount: "5000",
+        initialBalance: "100",
       };
       const action: AccountDetailAction = {
         type: "SET_GOAL_ENABLED",
@@ -127,6 +134,7 @@ describe("accountDetailReducer", () => {
       expect(result.name).toBe("Savings");
       expect(result.goalEnabled).toBe(false);
       expect(result.targetAmount).toBe("5000");
+      expect(result.initialBalance).toBe("100");
     });
   });
 
@@ -175,6 +183,7 @@ describe("accountDetailReducer", () => {
         name: "Emergency",
         goalEnabled: true,
         targetAmount: "1000",
+        initialBalance: "250",
       };
       const action: AccountDetailAction = {
         type: "SET_TARGET_AMOUNT",
@@ -186,6 +195,7 @@ describe("accountDetailReducer", () => {
       expect(result.name).toBe("Emergency");
       expect(result.goalEnabled).toBe(true);
       expect(result.targetAmount).toBe("3000");
+      expect(result.initialBalance).toBe("250");
     });
 
     it("should handle empty string", () => {
@@ -204,6 +214,82 @@ describe("accountDetailReducer", () => {
     });
   });
 
+  describe("SET_INITIAL_BALANCE", () => {
+    it("should set initial balance from empty state", () => {
+      const state = initialAccountDetailState;
+      const action: AccountDetailAction = {
+        type: "SET_INITIAL_BALANCE",
+        payload: "500",
+      };
+
+      const result = accountDetailReducer(state, action);
+
+      expect(result.initialBalance).toBe("500");
+    });
+
+    it("should update existing initial balance", () => {
+      const state: AccountDetailState = {
+        ...initialAccountDetailState,
+        initialBalance: "100",
+      };
+      const action: AccountDetailAction = {
+        type: "SET_INITIAL_BALANCE",
+        payload: "750",
+      };
+
+      const result = accountDetailReducer(state, action);
+
+      expect(result.initialBalance).toBe("750");
+    });
+
+    it("should handle decimal values", () => {
+      const state = initialAccountDetailState;
+      const action: AccountDetailAction = {
+        type: "SET_INITIAL_BALANCE",
+        payload: "123.45",
+      };
+
+      const result = accountDetailReducer(state, action);
+
+      expect(result.initialBalance).toBe("123.45");
+    });
+
+    it("should not affect other state properties", () => {
+      const state: AccountDetailState = {
+        name: "Test Account",
+        goalEnabled: true,
+        targetAmount: "1000",
+        initialBalance: "50",
+      };
+      const action: AccountDetailAction = {
+        type: "SET_INITIAL_BALANCE",
+        payload: "200",
+      };
+
+      const result = accountDetailReducer(state, action);
+
+      expect(result.name).toBe("Test Account");
+      expect(result.goalEnabled).toBe(true);
+      expect(result.targetAmount).toBe("1000");
+      expect(result.initialBalance).toBe("200");
+    });
+
+    it("should handle empty string", () => {
+      const state: AccountDetailState = {
+        ...initialAccountDetailState,
+        initialBalance: "100",
+      };
+      const action: AccountDetailAction = {
+        type: "SET_INITIAL_BALANCE",
+        payload: "",
+      };
+
+      const result = accountDetailReducer(state, action);
+
+      expect(result.initialBalance).toBe("");
+    });
+  });
+
   describe("INITIALIZE", () => {
     it("should initialize all state from payload", () => {
       const state = initialAccountDetailState;
@@ -213,6 +299,7 @@ describe("accountDetailReducer", () => {
           name: "Travel Fund",
           goalEnabled: false,
           targetAmount: "5000",
+          initialBalance: "100",
         },
       };
 
@@ -221,6 +308,7 @@ describe("accountDetailReducer", () => {
       expect(result.name).toBe("Travel Fund");
       expect(result.goalEnabled).toBe(false);
       expect(result.targetAmount).toBe("5000");
+      expect(result.initialBalance).toBe("100");
     });
 
     it("should completely replace existing state", () => {
@@ -228,6 +316,7 @@ describe("accountDetailReducer", () => {
         name: "Old Account",
         goalEnabled: true,
         targetAmount: "1000",
+        initialBalance: "50",
       };
       const action: AccountDetailAction = {
         type: "INITIALIZE",
@@ -235,6 +324,7 @@ describe("accountDetailReducer", () => {
           name: "New Account",
           goalEnabled: false,
           targetAmount: "2000",
+          initialBalance: "300",
         },
       };
 
@@ -243,6 +333,7 @@ describe("accountDetailReducer", () => {
       expect(result.name).toBe("New Account");
       expect(result.goalEnabled).toBe(false);
       expect(result.targetAmount).toBe("2000");
+      expect(result.initialBalance).toBe("300");
     });
 
     it("should handle initializing with default values", () => {
@@ -250,6 +341,7 @@ describe("accountDetailReducer", () => {
         name: "Existing",
         goalEnabled: false,
         targetAmount: "999",
+        initialBalance: "100",
       };
       const action: AccountDetailAction = {
         type: "INITIALIZE",
