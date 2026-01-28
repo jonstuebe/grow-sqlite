@@ -21,8 +21,8 @@ export interface TransferState {
 }
 
 export type TransferAction =
-  | { type: "SET_FROM_INDEX"; payload: number }
-  | { type: "SET_TO_INDEX"; payload: number }
+  | { type: "SET_FROM_INDEX"; payload: number | null }
+  | { type: "SET_TO_INDEX"; payload: number | null }
   | { type: "SWAP_ACCOUNTS" }
   | { type: "KEY_PRESS"; payload: KeypadKey };
 
@@ -92,11 +92,11 @@ export function transferReducer(
 export function useTransferReducer(initialState = initialTransferState) {
   const [state, dispatch] = useReducer(transferReducer, initialState);
 
-  const setFromIndex = useCallback((index: number) => {
+  const setFromIndex = useCallback((index: number | null) => {
     dispatch({ type: "SET_FROM_INDEX", payload: index });
   }, []);
 
-  const setToIndex = useCallback((index: number) => {
+  const setToIndex = useCallback((index: number | null) => {
     dispatch({ type: "SET_TO_INDEX", payload: index });
   }, []);
 

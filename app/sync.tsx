@@ -17,6 +17,7 @@ import { useSyncMachine } from "@/hooks/useSyncMachine";
 import { useTheme } from "@/hooks/useTheme";
 import { formatSyncResult } from "@/utils/format";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PressableGlass } from "../components/pressable-glass";
 
 interface DeviceItem extends Peer {
   isConnected: boolean;
@@ -99,7 +100,7 @@ export default function SyncScreen() {
             text: "Accept",
             onPress: () => acceptInvitation(),
           },
-        ]
+        ],
       );
     }
   }, [pendingInvitation, acceptInvitation]);
@@ -122,7 +123,7 @@ export default function SyncScreen() {
         id: "sync-toast",
         description: formatSyncResult(
           mergeResult.accountsMerged,
-          mergeResult.transactionsMerged
+          mergeResult.transactionsMerged,
         ),
       });
     } else if (syncStatus === "error" && lastError) {
@@ -146,7 +147,7 @@ export default function SyncScreen() {
         });
       }
     },
-    [startSync]
+    [startSync],
   );
 
   const renderDeviceItem = useCallback(
@@ -174,14 +175,16 @@ export default function SyncScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={{
-              paddingHorizontal: spacing.xl,
-              paddingVertical: spacing.md,
-              borderRadius: radius.lg,
-              minWidth: 80,
-              alignItems: "center",
-              backgroundColor: colors.blue,
+          <PressableGlass
+            glassProps={{
+              tintColor: colors.blue,
+              style: {
+                paddingHorizontal: spacing.xl,
+                paddingVertical: spacing.lg,
+                borderRadius: radius.lg,
+                alignItems: "center",
+                minWidth: 80,
+              },
             }}
             onPress={() => handleSync(item, item.isConnected)}
             disabled={isSyncingThisPeer}
@@ -193,11 +196,11 @@ export default function SyncScreen() {
                 Sync
               </Text>
             )}
-          </TouchableOpacity>
+          </PressableGlass>
         </View>
       );
     },
-    [colors, radius, spacing, syncStatus, syncingPeerId, handleSync]
+    [colors, radius, spacing, syncStatus, syncingPeerId, handleSync],
   );
 
   return (
@@ -291,19 +294,21 @@ export default function SyncScreen() {
         </View>
 
         {/* Discovery Toggle Button */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: colors.blue,
-            paddingVertical: spacing.lg,
-            borderRadius: radius.lg,
-            alignItems: "center",
+        <PressableGlass
+          glassProps={{
+            tintColor: colors.blue,
+            style: {
+              paddingVertical: spacing.lg,
+              borderRadius: radius.lg,
+              alignItems: "center",
+            },
           }}
           onPress={isDiscovering ? stopDiscovery : startDiscovery}
         >
           <Text variant="bodyEmphasized" color="white">
             {isDiscovering ? "Stop Discovery" : "Start Discovery"}
           </Text>
-        </TouchableOpacity>
+        </PressableGlass>
       </View>
     </>
   );

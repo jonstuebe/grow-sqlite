@@ -34,14 +34,14 @@ export default function TransferScreen() {
     amount !== "" || fromIndex !== null || toIndex !== null;
   const { navigateAway } = useUnsavedChangesWarning(hasUnsavedChanges);
 
-  const fromAccount = fromIndex !== null ? accounts[fromIndex] ?? null : null;
-  const toAccount = toIndex !== null ? accounts[toIndex] ?? null : null;
+  const fromAccount = fromIndex !== null ? (accounts[fromIndex] ?? null) : null;
+  const toAccount = toIndex !== null ? (accounts[toIndex] ?? null) : null;
 
   const validationContext = useMemo(
     () => ({
       fromAccountBalance: fromAccount?.current_amount ?? null,
     }),
-    [fromAccount?.current_amount]
+    [fromAccount?.current_amount],
   );
 
   const { errors, isValid } = useTransferValidation(state, validationContext);
@@ -123,7 +123,7 @@ export default function TransferScreen() {
               {formatCurrency(numAmount)}
             </Text>
           </View>
-          {errors.amount && amount !== "" && (
+          {errors.amount && amount !== "" ? (
             <View
               style={{
                 position: "absolute",
@@ -140,7 +140,7 @@ export default function TransferScreen() {
                 {errors.amount}
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View
@@ -160,6 +160,7 @@ export default function TransferScreen() {
             </Text>
             <AccountPicker
               accounts={accounts}
+              disabledAccount={toAccount}
               selectedAccount={fromAccount}
               onSelect={setFromIndex}
             />
@@ -199,9 +200,10 @@ export default function TransferScreen() {
             <AccountPicker
               accounts={accounts}
               selectedAccount={toAccount}
+              disabledAccount={fromAccount}
               onSelect={setToIndex}
             />
-            {errors.toIndex && toIndex !== null && (
+            {errors.toIndex && toIndex !== null ? (
               <Text
                 variant="caption1Regular"
                 color="red"
@@ -209,7 +211,7 @@ export default function TransferScreen() {
               >
                 {errors.toIndex}
               </Text>
-            )}
+            ) : null}
           </View>
         </View>
       </View>

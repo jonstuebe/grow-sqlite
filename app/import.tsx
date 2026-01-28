@@ -123,14 +123,14 @@ export default function ImportScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Import Backup
-        </Stack.Header.Title>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        Import Backup
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
 
       <ScrollView
         contentContainerStyle={{
@@ -139,7 +139,7 @@ export default function ImportScreen() {
           paddingBottom: insets.bottom + spacing.lg,
         }}
       >
-        {state.status === "idle" && (
+        {state.status === "idle" ? (
           <View
             style={{
               flex: 1,
@@ -193,9 +193,9 @@ export default function ImportScreen() {
               </View>
             </PressableGlass>
           </View>
-        )}
+        ) : null}
 
-        {state.status === "loading" && (
+        {state.status === "loading" ? (
           <View
             style={{
               flex: 1,
@@ -209,9 +209,9 @@ export default function ImportScreen() {
               Reading file...
             </Text>
           </View>
-        )}
+        ) : null}
 
-        {state.status === "preview" && (
+        {state.status === "preview" ? (
           <View style={{ flex: 1, gap: spacing.xl }}>
             <View style={{ alignItems: "center", gap: spacing.sm }}>
               <SymbolView
@@ -280,14 +280,14 @@ export default function ImportScreen() {
                 >
                   <View>
                     <Text variant="bodyEmphasized">{account.name}</Text>
-                    {account.hasGoal && account.goalAmount && (
+                    {account.hasGoal && account.goalAmount ? (
                       <Text
                         variant="caption1Regular"
                         color="labelVibrantSecondary"
                       >
                         Goal: {formatCurrency(account.goalAmount)}
                       </Text>
-                    )}
+                    ) : null}
                   </View>
                   <Text variant="bodyRegular" color="labelVibrantSecondary">
                     {formatCurrency(account.balance)}
@@ -329,9 +329,9 @@ export default function ImportScreen() {
               </PressableGlass>
             </View>
           </View>
-        )}
+        ) : null}
 
-        {state.status === "importing" && (
+        {state.status === "importing" ? (
           <View
             style={{
               flex: 1,
@@ -345,9 +345,9 @@ export default function ImportScreen() {
               Importing data...
             </Text>
           </View>
-        )}
+        ) : null}
 
-        {state.status === "success" && (
+        {state.status === "success" ? (
           <View
             style={{
               flex: 1,
@@ -391,9 +391,9 @@ export default function ImportScreen() {
               </Text>
             </PressableGlass>
           </View>
-        )}
+        ) : null}
 
-        {state.status === "error" && (
+        {state.status === "error" ? (
           <View
             style={{
               flex: 1,
@@ -433,7 +433,7 @@ export default function ImportScreen() {
               </Text>
             </PressableGlass>
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </>
   );

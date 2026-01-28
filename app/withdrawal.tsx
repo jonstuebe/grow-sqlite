@@ -103,7 +103,7 @@ export default function WithdrawalScreen() {
               {formatCurrency(numAmount)}
             </Text>
           </View>
-          {hasInsufficientFunds && numAmount > 0 && (
+          {hasInsufficientFunds && numAmount > 0 ? (
             <View
               style={{
                 position: "absolute",
@@ -120,7 +120,7 @@ export default function WithdrawalScreen() {
                 Insufficient funds
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View>
@@ -154,7 +154,7 @@ export default function WithdrawalScreen() {
                   : "Loading..."}
               </Text>
             </View>
-            {numAmount > 0 && account && (
+            {numAmount > 0 && account ? (
               <View style={{ alignItems: "flex-end" }}>
                 <Text
                   variant="caption1Emphasized"
@@ -169,7 +169,7 @@ export default function WithdrawalScreen() {
                   {formatCurrency(newBalance)}
                 </Text>
               </View>
-            )}
+            ) : null}
           </View>
         </View>
       </View>
