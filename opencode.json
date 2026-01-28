@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "ask-mode": {
+      "prompt": "You are in Ask Mode. You must explain your reasoning and always use the 'ask' permission for any tool usage.",
+      "permission": {
+        "*": "ask"
+      }
+    }
+  },
+  "plugin": [
+    "@nick-vi/opencode-type-inject",
+    "@tarquinen/opencode-dcp@latest",
+    "@franlol/opencode-md-table-formatter@0.0.3"
+  ]
+}

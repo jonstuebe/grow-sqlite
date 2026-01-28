@@ -59,23 +59,23 @@ export default function NewAccountScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          New Account
-        </Stack.Header.Title>
-        <Stack.Header.Right>
-          {canSave && (
-            <Stack.Header.Button
-              icon="checkmark"
-              variant="done"
-              onPress={handleSave}
-            />
-          )}
-        </Stack.Header.Right>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        New Account
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="right">
+        {canSave && (
+          <Stack.Toolbar.Button
+            icon="checkmark"
+            variant="done"
+            onPress={handleSave}
+          />
+        )}
+      </Stack.Toolbar>
 
       <View
         style={{

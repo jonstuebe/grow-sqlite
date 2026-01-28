@@ -12,7 +12,6 @@ import { useAccountDetailReducer } from "@/hooks/useAccountDetailReducer";
 import { useTheme } from "@/hooks/useTheme";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { formatCurrency, getProgress } from "@/utils/format";
-import { Toolbar } from "expo-router/unstable-toolbar";
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -111,23 +110,23 @@ export default function AccountDetailScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Account Details
-        </Stack.Header.Title>
-        <Stack.Header.Right>
-          {hasChanges && isValid && (
-            <Stack.Header.Button
-              icon="checkmark"
-              variant="done"
-              onPress={handleSave}
-            />
-          )}
-        </Stack.Header.Right>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        Account Details
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="right">
+        {hasChanges && isValid && (
+          <Stack.Toolbar.Button
+            icon="checkmark"
+            variant="done"
+            onPress={handleSave}
+          />
+        )}
+      </Stack.Toolbar>
 
       <View
         style={{
@@ -192,20 +191,20 @@ export default function AccountDetailScreen() {
           </View>
         </View>
 
-        <Toolbar>
-          <Toolbar.Button
+        <Stack.Toolbar>
+          <Stack.Toolbar.Button
             icon="list.bullet"
             onPress={() => router.push(`/transactions?accountId=${account.id}`)}
           >
             Transactions
-          </Toolbar.Button>
-          <Toolbar.Spacer sharesBackground={false} />
-          <Toolbar.Button
+          </Stack.Toolbar.Button>
+          <Stack.Toolbar.Spacer sharesBackground={false} />
+          <Stack.Toolbar.Button
             icon="archivebox"
             tintColor={colors.red}
             onPress={handleArchive}
           />
-        </Toolbar>
+        </Stack.Toolbar>
       </View>
     </>
   );

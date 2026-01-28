@@ -115,14 +115,14 @@ export default function ArchivedScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Archived Accounts
-        </Stack.Header.Title>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        Archived Accounts
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
 
       <ScrollView
         style={{ flex: 1 }}

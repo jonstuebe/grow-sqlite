@@ -123,14 +123,14 @@ export default function ImportScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Import Backup
-        </Stack.Header.Title>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        Import Backup
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
 
       <ScrollView
         contentContainerStyle={{

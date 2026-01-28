@@ -1,5 +1,4 @@
 import { Link, Stack, useRouter } from "expo-router";
-import { Toolbar } from "expo-router/unstable-toolbar";
 import { SymbolView } from "expo-symbols";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
@@ -55,7 +54,8 @@ function AccountRow({ account }: { account: Account }) {
               <Text variant="rowLabelTitle">{account.name}</Text>
               <Text variant="rowLabelSubtitle" color="labelVibrantSecondary">
                 {formatCurrency(account.current_amount)}
-                {account.goal_enabled && ` of ${formatCurrency(account.target_amount)}`}
+                {account.goal_enabled &&
+                  ` of ${formatCurrency(account.target_amount)}`}
               </Text>
             </View>
             {account.goal_enabled && (
@@ -88,19 +88,17 @@ export default function HomeScreen() {
         style={{
           backgroundColor: colors.backgroundPrimary,
         }}
-      >
-        <Stack.Header.Title
-          style={{ color: colors.labelPrimary, fontSize: 32 }}
-        >
-          {formatCurrency(totalBalance)}
-        </Stack.Header.Title>
-        <Stack.Header.Right>
-          <Stack.Header.Button
-            icon="arrow.2.circlepath"
-            onPress={() => router.push("/sync")}
-          />
-        </Stack.Header.Right>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary, fontSize: 32 }}>
+        {formatCurrency(totalBalance)}
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Button
+          icon="arrow.2.circlepath"
+          onPress={() => router.push("/sync")}
+        />
+      </Stack.Toolbar>
 
       <View
         style={{
@@ -254,22 +252,22 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <Toolbar>
+      <Stack.Toolbar>
         {accounts.length >= 2 ? (
-          <Toolbar.Button
+          <Stack.Toolbar.Button
             icon="arrow.up.arrow.down"
             onPress={() => router.push("/transfer")}
           />
         ) : null}
         {archivedAccounts.length > 0 ? (
-          <Toolbar.Button
+          <Stack.Toolbar.Button
             icon="archivebox"
             onPress={() => router.push("/archived")}
           />
         ) : null}
-        <Toolbar.Spacer sharesBackground={false} />
-        <Toolbar.Button icon="plus" onPress={() => router.push("/new")} />
-      </Toolbar>
+        <Stack.Toolbar.Spacer sharesBackground={false} />
+        <Stack.Toolbar.Button icon="plus" onPress={() => router.push("/new")} />
+      </Stack.Toolbar>
     </>
   );
 }

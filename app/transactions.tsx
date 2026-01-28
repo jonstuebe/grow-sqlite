@@ -142,22 +142,22 @@ export default function TransactionsScreen() {
         style={{
           backgroundColor: colors.backgroundTertiary,
         }}
-      >
-        <Stack.Header.Left>
-          <Stack.Header.Button icon="xmark" onPress={() => router.back()} />
-        </Stack.Header.Left>
-        <Stack.Header.Title style={{ color: colors.labelPrimary }}>
-          Transactions
-        </Stack.Header.Title>
-        <Stack.Header.Right>
-          {transactions.length > 0 && (
-            <Stack.Header.Button
-              icon="arrow.uturn.backward"
-              onPress={handleUndoLast}
-            />
-          )}
-        </Stack.Header.Right>
-      </Stack.Header>
+      />
+
+      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
+        Transactions
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="right">
+        {transactions.length > 0 && (
+          <Stack.Toolbar.Button
+            icon="arrow.uturn.backward"
+            onPress={handleUndoLast}
+          />
+        )}
+      </Stack.Toolbar>
 
       <FlatList
         data={isLoading ? [] : transactions}
