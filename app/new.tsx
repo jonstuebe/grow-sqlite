@@ -1,10 +1,9 @@
-import { Stack } from "expo-router/stack";
 import { useRouter } from "expo-router";
-import { View, TextInput, Switch } from "react-native";
+import { Stack } from "expo-router/stack";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FormField } from "@/components/form-field";
-import { Text } from "@/components/text";
 import { useCreateAccountWithInitialBalance } from "@/db/hooks";
 import { useAccountDetailReducer } from "@/hooks/useAccountDetailReducer";
 import { useTheme } from "@/hooks/useTheme";
@@ -55,35 +54,14 @@ export default function NewAccountScreen() {
 
   return (
     <>
-      <Stack.Header
-        style={{
-          backgroundColor: colors.backgroundTertiary,
-        }}
-      />
-
-      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
-        New Account
-      </Stack.Screen.Title>
-      <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
-      </Stack.Toolbar>
-      <Stack.Toolbar placement="right">
-        {canSave && (
-          <Stack.Toolbar.Button
-            icon="checkmark"
-            variant="done"
-            onPress={handleSave}
-          />
-        )}
-      </Stack.Toolbar>
-
-      <View
+      <ScrollView
         style={{
           flex: 1,
           padding: spacing.lg,
           paddingBottom: insets.bottom + spacing.lg,
           gap: spacing.xl,
         }}
+        contentInsetAdjustmentBehavior="automatic"
       >
         <View style={{ gap: spacing.md }}>
           <FormField.Root>
@@ -120,8 +98,7 @@ export default function NewAccountScreen() {
               />
             </FormField.InputGroup>
           </FormField.Root>
-
-          {goalEnabled && (
+          {goalEnabled ? (
             <FormField.Root>
               <FormField.Label>Target Amount</FormField.Label>
               <FormField.InputGroup>
@@ -134,9 +111,28 @@ export default function NewAccountScreen() {
                 />
               </FormField.InputGroup>
             </FormField.Root>
-          )}
+          ) : null}
         </View>
-      </View>
+      </ScrollView>
+      <Stack.Screen.Title
+        style={{
+          color: colors.labelPrimary,
+        }}
+      >
+        New Account
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="right">
+        {canSave ? (
+          <Stack.Toolbar.Button
+            icon="checkmark"
+            variant="done"
+            onPress={handleSave}
+          />
+        ) : null}
+      </Stack.Toolbar>
     </>
   );
 }

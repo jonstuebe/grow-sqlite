@@ -1,7 +1,7 @@
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useEffect } from "react";
-import { Alert, Switch, View } from "react-native";
+import { Alert, ScrollView, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FormField } from "@/components/form-field";
@@ -87,13 +87,13 @@ export default function AccountDetailScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
   const progress = getProgress(
     account?.current_amount ?? 0,
-    account?.target_amount ?? 0
+    account?.target_amount ?? 0,
   );
 
   if (isLoading || !account) {
@@ -106,106 +106,92 @@ export default function AccountDetailScreen() {
 
   return (
     <>
-      <Stack.Header
+      <View
         style={{
-          backgroundColor: colors.backgroundTertiary,
+          flex: 1,
+          justifyContent: "space-between",
+          paddingTop: spacing.xxxl,
+          paddingHorizontal: spacing.lg,
+          gap: spacing.xl,
         }}
-      />
+      >
+        <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
+          <Text variant="caption1Emphasized" color="labelVibrantSecondary">
+            CURRENT BALANCE
+          </Text>
+          <Text
+            variant="largeTitleEmphasized"
+            style={{ fontSize: 48, lineHeight: 56 }}
+          >
+            {formatCurrency(account.current_amount)}
+          </Text>
+          {goalEnabled && account.target_amount > 0 ? (
+            <Text variant="bodyRegular" color="labelVibrantSecondary">
+              {Math.round(progress)}% of {formatCurrency(account.target_amount)}
+            </Text>
+          ) : null}
+        </View>
 
-      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
-        Account Details
-      </Stack.Screen.Title>
+        <View style={{ gap: spacing.md }}>
+          <FormField.Root>
+            <FormField.Label>Name</FormField.Label>
+            <FormField.InputGroup>
+              <FormField.TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="Account name"
+              />
+            </FormField.InputGroup>
+          </FormField.Root>
+          <FormField.Root>
+            <FormField.Label>Savings Goal</FormField.Label>
+            <FormField.Switch
+              value={goalEnabled}
+              onValueChange={setGoalEnabled}
+            />
+          </FormField.Root>
+          {goalEnabled ? (
+            <FormField.Root>
+              <FormField.Label>Target Amount</FormField.Label>
+              <FormField.InputGroup>
+                <FormField.InputAddon>$</FormField.InputAddon>
+                <FormField.TextInput
+                  value={targetAmount}
+                  onChangeText={setTargetAmount}
+                  placeholder="0"
+                  keyboardType="decimal-pad"
+                />
+              </FormField.InputGroup>
+            </FormField.Root>
+          ) : null}
+        </View>
+      </View>
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
-        {hasChanges && isValid && (
+        {hasChanges && isValid ? (
           <Stack.Toolbar.Button
             icon="checkmark"
             variant="done"
             onPress={handleSave}
           />
-        )}
+        ) : null}
       </Stack.Toolbar>
-
-      <View
-        style={{
-          flex: 1,
-          padding: spacing.lg,
-          paddingBottom: insets.bottom + spacing.lg,
-          gap: spacing.xl,
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ gap: spacing.md }}>
-          <View style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-            <Text variant="caption1Emphasized" color="labelVibrantSecondary">
-              CURRENT BALANCE
-            </Text>
-            <Text
-              variant="largeTitleEmphasized"
-              style={{ fontSize: 48, lineHeight: 56 }}
-            >
-              {formatCurrency(account.current_amount)}
-            </Text>
-            {goalEnabled && account.target_amount > 0 && (
-              <Text variant="bodyRegular" color="labelVibrantSecondary">
-                {Math.round(progress)}% of{" "}
-                {formatCurrency(account.target_amount)}
-              </Text>
-            )}
-          </View>
-
-          <View style={{ gap: spacing.md }}>
-            <FormField.Root>
-              <FormField.Label>Name</FormField.Label>
-              <FormField.InputGroup>
-                <FormField.TextInput
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="Account name"
-                />
-              </FormField.InputGroup>
-            </FormField.Root>
-            <FormField.Root>
-              <FormField.Label>Savings Goal</FormField.Label>
-              <FormField.Switch
-                value={goalEnabled}
-                onValueChange={setGoalEnabled}
-              />
-            </FormField.Root>
-            {goalEnabled ? (
-              <FormField.Root>
-                <FormField.Label>Target Amount</FormField.Label>
-                <FormField.InputGroup>
-                  <FormField.InputAddon>$</FormField.InputAddon>
-                  <FormField.TextInput
-                    value={targetAmount}
-                    onChangeText={setTargetAmount}
-                    placeholder="0"
-                    keyboardType="decimal-pad"
-                  />
-                </FormField.InputGroup>
-              </FormField.Root>
-            ) : null}
-          </View>
-        </View>
-
-        <Stack.Toolbar>
-          <Stack.Toolbar.Button
-            icon="list.bullet"
-            onPress={() => router.push(`/transactions?accountId=${account.id}`)}
-          >
-            Transactions
-          </Stack.Toolbar.Button>
-          <Stack.Toolbar.Spacer sharesBackground={false} />
-          <Stack.Toolbar.Button
-            icon="archivebox"
-            tintColor={colors.red}
-            onPress={handleArchive}
-          />
-        </Stack.Toolbar>
-      </View>
+      <Stack.Toolbar placement="bottom">
+        <Stack.Toolbar.Button
+          icon="list.bullet"
+          onPress={() => router.push(`/transactions?accountId=${account.id}`)}
+        >
+          Transactions
+        </Stack.Toolbar.Button>
+        <Stack.Toolbar.Spacer sharesBackground={false} />
+        <Stack.Toolbar.Button
+          icon="archivebox"
+          tintColor={colors.red}
+          onPress={handleArchive}
+        />
+      </Stack.Toolbar>
     </>
   );
 }

@@ -46,21 +46,32 @@ export default function RootLayout() {
                       backgroundColor: colors.backgroundSecondary,
                     }}
                   />
-                  <Stack.Screen name="index" />
                   <Stack.Screen
-                    name="new"
+                    name="index"
                     options={{
-                      // headerShown: false,
-                      presentation: "formSheet",
-                      sheetAllowedDetents: [0.6, 1],
-                      sheetInitialDetentIndex: 0,
-                      sheetGrabberVisible: true,
                       contentStyle: {
-                        height: "100%",
+                        // flex: 1,
                         backgroundColor: colors.backgroundSecondary,
                       },
                     }}
-                  />
+                  >
+                    <Stack.Header style={{ backgroundColor: "transparent" }} />
+                  </Stack.Screen>
+                  <Stack.Screen
+                    name="new"
+                    options={{
+                      presentation: "formSheet",
+                      sheetAllowedDetents: "fitToContents",
+                      headerTransparent: true,
+                      sheetInitialDetentIndex: 0,
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  >
+                    <Stack.Header style={{ backgroundColor: "transparent" }} />
+                  </Stack.Screen>
                   <Stack.Screen
                     name="transfer"
                     options={{
@@ -71,9 +82,19 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="[id]"
                     options={{
-                      presentation: "modal",
+                      presentation: "formSheet",
+                      title: "",
+                      sheetAllowedDetents: "fitToContents",
+                      headerTransparent: true,
+                      sheetInitialDetentIndex: 0,
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        backgroundColor: "transparent",
+                      },
                     }}
-                  />
+                  >
+                    <Stack.Header style={{ backgroundColor: "transparent" }} />
+                  </Stack.Screen>
                   <Stack.Screen
                     name="deposit"
                     options={{
@@ -91,23 +112,31 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="transactions"
                     options={{
-                      headerShown: true,
+                      title: "",
                       presentation: "formSheet",
-                      sheetAllowedDetents: [0.3, 1],
-                      sheetInitialDetentIndex: 0,
+                      sheetAllowedDetents: [0.5],
                       sheetGrabberVisible: true,
                       contentStyle: {
-                        height: "100%",
-                        backgroundColor: colors.backgroundSecondary,
+                        backgroundColor: "transparent",
                       },
                     }}
-                  />
+                  >
+                    <Stack.Header style={{ backgroundColor: "transparent" }} />
+                  </Stack.Screen>
                   <Stack.Screen
                     name="archived"
                     options={{
-                      presentation: "modal",
+                      title: "",
+                      presentation: "formSheet",
+                      sheetAllowedDetents: [0.3],
+                      sheetGrabberVisible: true,
+                      contentStyle: {
+                        backgroundColor: "transparent",
+                      },
                     }}
-                  />
+                  >
+                    <Stack.Header style={{ backgroundColor: "transparent" }} />
+                  </Stack.Screen>
                   <Stack.Screen
                     name="import"
                     options={{

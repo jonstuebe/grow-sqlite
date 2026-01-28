@@ -134,7 +134,7 @@ export default function DepositScreen() {
                   : "Loading..."}
               </Text>
             </View>
-            {numAmount > 0 && account && (
+            {numAmount > 0 && account ? (
               <View style={{ alignItems: "flex-end" }}>
                 <Text
                   variant="caption1Emphasized"
@@ -146,7 +146,7 @@ export default function DepositScreen() {
                   {formatCurrency(newBalance)}
                 </Text>
               </View>
-            )}
+            ) : null}
           </View>
         </View>
       </View>

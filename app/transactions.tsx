@@ -24,7 +24,7 @@ function getTransactionIcon(type: TransactionType): SFSymbolName {
 
 function getTransactionColor(
   type: TransactionType,
-  colors: ReturnType<typeof useTheme>["colors"]
+  colors: ReturnType<typeof useTheme>["colors"],
 ): string {
   switch (type) {
     case "deposit":
@@ -117,7 +117,7 @@ export default function TransactionsScreen() {
       `Are you sure you want to delete this ${
         lastTransaction.type
       }?\n\n${formatCurrency(lastTransaction.amount)} on ${formatDate(
-        lastTransaction.created_at
+        lastTransaction.created_at,
       )}\n\nThis action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
@@ -132,33 +132,12 @@ export default function TransactionsScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
   return (
     <>
-      <Stack.Header
-        style={{
-          backgroundColor: colors.backgroundTertiary,
-        }}
-      />
-
-      <Stack.Screen.Title style={{ color: colors.labelPrimary }}>
-        Transactions
-      </Stack.Screen.Title>
-      <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
-      </Stack.Toolbar>
-      <Stack.Toolbar placement="right">
-        {transactions.length > 0 && (
-          <Stack.Toolbar.Button
-            icon="arrow.uturn.backward"
-            onPress={handleUndoLast}
-          />
-        )}
-      </Stack.Toolbar>
-
       <FlatList
         data={isLoading ? [] : transactions}
         keyExtractor={(item) => item.id}
@@ -201,12 +180,36 @@ export default function TransactionsScreen() {
             </View>
           )
         }
-        contentContainerStyle={{
-          flexGrow: 1,
-          padding: spacing.lg,
-          paddingBottom: insets.bottom + spacing.lg,
+        contentInsetAdjustmentBehavior="automatic"
+        style={{
+          flex: 1,
+          paddingHorizontal: spacing.lg,
+          // padding: spacing.lg,
+          // paddingBottom: insets.bottom + spacing.lg,
         }}
       />
+      <Stack.Screen.Title
+        large
+        style={{
+          color: colors.labelPrimary,
+        }}
+        largeStyle={{
+          color: colors.labelPrimary,
+        }}
+      >
+        Transactions
+      </Stack.Screen.Title>
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+      </Stack.Toolbar>
+      <Stack.Toolbar placement="right">
+        {transactions.length > 0 ? (
+          <Stack.Toolbar.Button
+            icon="arrow.uturn.backward"
+            onPress={handleUndoLast}
+          />
+        ) : null}
+      </Stack.Toolbar>
     </>
   );
 }
